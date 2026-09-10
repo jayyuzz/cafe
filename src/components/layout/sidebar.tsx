@@ -81,7 +81,9 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       >
         <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-border">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <Coffee className="h-6 w-6" />
+            <div className="h-8 w-8 rounded overflow-hidden flex items-center justify-center">
+              <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-cover scale-[1.3]" />
+            </div>
             <span>MVE</span>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>

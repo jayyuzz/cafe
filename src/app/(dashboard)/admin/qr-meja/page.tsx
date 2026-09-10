@@ -185,7 +185,9 @@ export default function QRMejaPage() {
         <div className="flex flex-col items-center">
           <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center gap-3 w-full">
             <div className="flex items-center gap-2 mb-1">
-              <Coffee className="h-5 w-5 text-primary" />
+              <div className="h-6 w-6 rounded flex items-center justify-center overflow-hidden">
+                <img src="/mve-logo.png" alt="Logo" className="w-full h-full object-cover scale-[1.3]" />
+              </div>
               <span className="font-bold text-base">{outlet?.name ?? "Kafe"}</span>
             </div>
             <p className="text-xs text-muted-foreground -mt-2">Scan untuk memesan</p>

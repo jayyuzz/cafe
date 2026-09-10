@@ -61,8 +61,8 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-12 w-12 rounded-2xl bg-amber-900 flex items-center justify-center shadow-lg shadow-amber-900/20">
-              <Coffee className="h-6 w-6 text-amber-50" />
+            <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-amber-900/10 overflow-hidden border border-gray-100">
+              <img src="/mve-logo.png" alt="MVE Logo" className="w-full h-full object-cover scale-150" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-amber-950">MVE POS</span>
           </div>
