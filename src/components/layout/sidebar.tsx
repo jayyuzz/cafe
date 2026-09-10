@@ -11,10 +11,10 @@ import {
   BarChart3,
   LogOut,
   X,
-  Shield,
   KeySquare,
   Calendar,
   Settings,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ const navigation = [
   { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
   { name: "Laporan", href: "/laporan", icon: BarChart3, permission: "laporan" },
   { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
+  { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
   { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
   { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },
 ];
