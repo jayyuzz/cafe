@@ -366,14 +366,9 @@ function OrderPageContent() {
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              {outlet.logo_url ? (
-                <img src={outlet.logo_url} alt={outlet.name}
-                  className="h-11 w-11 rounded-2xl object-cover shadow-sm" />
-              ) : (
-                <div className="h-11 w-11 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden">
-                  <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-contain p-1" />
-                </div>
-              )}
+              <div className="h-11 w-11 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden">
+                <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-contain p-1" />
+              </div>
               <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#f8f7f4]" />
             </div>
             <div className="flex-1 min-w-0">
