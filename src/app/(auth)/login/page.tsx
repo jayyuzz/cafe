@@ -62,9 +62,9 @@ export default function LoginPage() {
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-amber-900/10 overflow-hidden border border-gray-100">
-              <img src="/mve-logo.png" alt="MVE Logo" className="w-full h-full object-contain p-1" />
+              <img src="/mve-logo.png" alt="Paylabs Logo" className="w-full h-full object-contain p-1" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-amber-950">MVE POS</span>
+            <span className="text-2xl font-bold tracking-tight text-amber-950">Paylabs</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
             Selamat Datang 👋
@@ -81,7 +81,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="admin@mve.com"
+              placeholder="admin@paylabs.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -137,7 +137,7 @@ export default function LoginPage() {
 
         {/* Footer info */}
         <div className="mt-16 text-sm text-gray-400 text-center lg:text-left">
-          &copy; {new Date().getFullYear()} MVE Cafe. All rights reserved.
+          &copy; {new Date().getFullYear()} Paylabs-Kotamobagu.id. All rights reserved.
         </div>
       </div>
 
@@ -163,7 +163,7 @@ export default function LoginPage() {
                 <Coffee className="h-5 w-5 text-amber-300" />
               </div>
               <div className="text-sm">
-                <div className="font-semibold text-white">MVE POS System</div>
+                <div className="font-semibold text-white">Paylabs System</div>
                 <div className="text-amber-200/70">Point of Sales Dashboard</div>
               </div>
             </footer>

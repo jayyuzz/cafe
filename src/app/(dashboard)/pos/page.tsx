@@ -105,7 +105,7 @@ export default function POSPage() {
     }
 
     setIsProcessing(true);
-    const orderNumber = `YND-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    const orderNumber = `MVE-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
 
     const { data: order, error: orderError } = await supabase.from("orders").insert({
       outlet_id: cart[0].product.outlet_id,

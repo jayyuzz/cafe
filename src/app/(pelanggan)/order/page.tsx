@@ -248,7 +248,7 @@ function OrderPageContent() {
     }
 
     setIsSubmitting(true);
-    const orderNumber = `YND-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(Math.random() * 9000 + 1000)}`;
+    const orderNumber = `MVE-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(Math.random() * 9000 + 1000)}`;
 
     const { data: order, error: orderError } = await supabase.from("orders").insert({
       outlet_id: outlet.id,

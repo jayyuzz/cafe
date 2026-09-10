@@ -26,5 +26,5 @@ export function generateOrderNumber(count: number): string {
   const month = String(date.getMonth() + 1).padStart(2, "0")
   const day = String(date.getDate()).padStart(2, "0")
   const sequence = String(count).padStart(3, "0")
-  return `YND-${year}${month}${day}-${sequence}`
+  return `MVE-${year}${month}${day}-${sequence}`
 }

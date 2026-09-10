@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 const inter = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MVE POS",
-  description: "Aplikasi Kasir MVE",
+  title: "Paylabs",
+  description: "Aplikasi Kasir Cafe & Resto",
 };
 
 export default function RootLayout({
