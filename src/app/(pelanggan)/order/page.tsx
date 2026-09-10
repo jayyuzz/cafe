@@ -247,6 +247,10 @@ function OrderPageContent() {
       toast.error("Pilih nomor meja terlebih dahulu");
       return;
     }
+    if (!customerName.trim()) {
+      toast.error("Silakan isi nama kamu terlebih dahulu");
+      return;
+    }
 
     setIsSubmitting(true);
     const orderNumber = `MVE-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(Math.random() * 9000 + 1000)}`;
@@ -312,7 +316,8 @@ function OrderPageContent() {
   });
 
   const canSubmit = cart.length > 0 && paymentMethod !== null && !isSubmitting
-    && (orderType === "take_away" || tableNumber !== null);
+    && (orderType === "take_away" || tableNumber !== null)
+    && customerName.trim().length > 0;
 
   /* ── Loading ────────────────────────────────────────────────────────────── */
   if (isLoading) {
@@ -762,7 +767,7 @@ function OrderPageContent() {
               {/* ── Customer name ── */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Nama <span className="font-normal normal-case">(opsional)</span>
+                  Nama <span className="text-red-500">*</span>
                 </p>
                 <input
                   type="text"
@@ -821,6 +826,8 @@ function OrderPageContent() {
                     <span className="h-4 w-4 rounded-full border-2 border-amber-50/30 border-t-amber-50 animate-spin" />
                     Memproses...
                   </span>
+                ) : !customerName.trim() ? (
+                  "Isi Nama Terlebih Dahulu"
                 ) : !paymentMethod ? (
                   "Pilih Metode Pembayaran"
                 ) : (
@@ -828,9 +835,9 @@ function OrderPageContent() {
                 )}
               </button>
 
-              {!paymentMethod && (
+              {(!paymentMethod || !customerName.trim()) && (
                 <p className="text-center text-[11px] text-muted-foreground/60 mt-2">
-                  Pilih metode pembayaran di atas untuk melanjutkan
+                  Lengkapi data pesanan di atas untuk melanjutkan
                 </p>
               )}
             </div>
