@@ -645,8 +645,10 @@ function OrderPageContent() {
               </div>
             </div>
 
-            {/* Cart items */}
-            <div className="overflow-y-auto px-5 py-3 space-y-3" style={{ maxHeight: "30vh" }}>
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {/* Cart items */}
+              <div className="px-5 py-3 space-y-3">
               {cart.map((item, index) => {
                 const price = item.product.price + (item.variant?.additional_price ?? 0);
                 return (
@@ -715,7 +717,7 @@ function OrderPageContent() {
             </div>
 
             {/* Checkout form */}
-            <div className="shrink-0 px-5 pt-3 pb-6 border-t border-border/50 space-y-4 bg-white overflow-y-auto">
+            <div className="px-5 pt-3 pb-6 border-t border-border/50 space-y-4">
 
               {/* ── Order type ── */}
               <div>
@@ -803,6 +805,11 @@ function OrderPageContent() {
                 </div>
               </div>
 
+              </div>
+            </div> {/* End of Scrollable Body */}
+
+            {/* Fixed Footer */}
+            <div className="shrink-0 px-5 py-4 border-t border-border/50 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
               {/* ── Submit ── */}
               <button
                 disabled={!canSubmit}
@@ -827,7 +834,7 @@ function OrderPageContent() {
               </button>
 
               {!paymentMethod && (
-                <p className="text-center text-[11px] text-muted-foreground/60 -mt-2">
+                <p className="text-center text-[11px] text-muted-foreground/60 mt-2">
                   Pilih metode pembayaran di atas untuk melanjutkan
                 </p>
               )}
