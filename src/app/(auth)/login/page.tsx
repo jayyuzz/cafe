@@ -62,7 +62,7 @@ export default function LoginPage() {
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
             <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-amber-900/10 overflow-hidden border border-gray-100">
-              <img src="/mve-logo.png" alt="Paylabs Logo" className="w-full h-full object-contain p-1" />
+              <img src="/paylabs-logo.png" alt="Paylabs Logo" className="w-full h-full object-contain p-1" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-amber-950">Paylabs</span>
           </div>

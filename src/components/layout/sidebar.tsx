@@ -82,9 +82,9 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-border">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
             <div className="h-8 w-8 rounded overflow-hidden flex items-center justify-center">
-              <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-contain p-0.5" />
+              <img src="/paylabs-logo.png" alt="Paylabs" className="w-full h-full object-contain p-0.5" />
             </div>
-            <span>MVE</span>
+            <span>Paylabs</span>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
             <X className="h-5 w-5" />
