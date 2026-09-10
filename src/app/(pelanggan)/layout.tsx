@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: "Pesan Menu — MVE",
-  description: "Lihat menu dan pesan langsung dari mejamu",
+  description: "Lihat menu dan pesan langsung dari meja kamu",
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",

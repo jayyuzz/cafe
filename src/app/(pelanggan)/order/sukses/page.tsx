@@ -7,62 +7,57 @@ import {
   QrCode, Banknote, Smartphone, Clock,
 } from "lucide-react";
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import QRCode from "qrcode";
+import { Suspense } from "react";
 
 /* ─── QRIS Block ─────────────────────────────────────────────────────────── */
-function QrisBlock({ orderNumber }: { orderNumber: string }) {
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
-
-  useEffect(() => {
-    // Generate QR code from order number so cashier can scan to confirm payment
-    QRCode.toDataURL(orderNumber, {
-      width: 280,
-      margin: 1,
-      color: { dark: "#000000", light: "#FFFFFF" },
-      errorCorrectionLevel: "H",
-    }).then(setQrDataUrl).catch(console.error);
-  }, [orderNumber]);
-
+function QrisBlock({ total }: { total: number }) {
   return (
     <div className="px-5 py-4 border-b border-border/50">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <div className="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center">
           <QrCode className="h-4 w-4 text-violet-700" />
         </div>
         <div>
           <p className="text-sm font-bold text-violet-700">Bayar via QRIS</p>
-          <p className="text-xs text-muted-foreground">Scan QR di bawah di mesin kasir</p>
+          <p className="text-xs text-muted-foreground">Scan QR code di bawah untuk membayar</p>
         </div>
       </div>
 
-      {/* QR Code */}
+      {/* Static QRIS image */}
       <div className="flex flex-col items-center">
         <div className="bg-white rounded-2xl p-3 border-2 border-violet-200 shadow-sm">
-          {qrDataUrl ? (
-            <img src={qrDataUrl} alt="QR Order" className="h-[180px] w-[180px]" />
-          ) : (
-            <div className="h-[180px] w-[180px] bg-muted animate-pulse rounded-lg" />
-          )}
+          <img
+            src="/qris-mve.png"
+            alt="QRIS MVE"
+            className="h-[220px] w-[220px] object-contain"
+          />
         </div>
-        <p className="text-xs text-muted-foreground mt-3 text-center">
-          Tunjukkan QR ini ke kasir untuk scan & konfirmasi pembayaran QRIS
+
+        {/* Amount to pay */}
+        <div className="mt-3 w-full bg-violet-50 rounded-2xl px-4 py-3 flex items-center justify-between border border-violet-200/70">
+          <span className="text-sm text-violet-900 font-medium">Total yang dibayar</span>
+          <span className="text-base font-bold text-violet-900">{formatRupiah(total)}</span>
+        </div>
+
+        <p className="text-xs text-muted-foreground mt-2.5 text-center leading-relaxed">
+          Scan QR di atas menggunakan e-wallet kamu,<br/>
+          lalu tunjukkan bukti pembayaran ke kasir.
         </p>
       </div>
 
       {/* Steps */}
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {[
-          { icon: <Smartphone className="h-3.5 w-3.5" />, text: "Tunjukkan layar HP ini ke kasir" },
-          { icon: <QrCode className="h-3.5 w-3.5" />, text: "Kasir scan QR di atas untuk konfirmasi" },
-          { icon: <CheckCircle2 className="h-3.5 w-3.5" />, text: "Pembayaran selesai & pesanan diproses" },
+          { icon: <Smartphone className="h-3.5 w-3.5" />, text: "Buka aplikasi e-wallet (GoPay, OVO, Dana, dll.)" },
+          { icon: <QrCode className="h-3.5 w-3.5" />, text: `Scan QR di atas & masukkan nominal ${formatRupiah(total)}` },
+          { icon: <CheckCircle2 className="h-3.5 w-3.5" />, text: "Tunjukkan bukti bayar ke kasir" },
         ].map(({ icon, text }, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <div className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+          <div key={i} className="flex items-start gap-2.5">
+            <div className="h-6 w-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0 mt-0.5">
               {icon}
             </div>
-            <p className="text-xs text-muted-foreground">{text}</p>
+            <p className="text-xs text-muted-foreground leading-snug">{text}</p>
           </div>
         ))}
       </div>
@@ -195,7 +190,7 @@ function SuksesContent() {
 
           {/* Payment-specific content */}
           {isQris
-            ? <QrisBlock orderNumber={orderNumber} />
+            ? <QrisBlock total={total} />
             : <CashBlock total={total} />}
 
         </div>
