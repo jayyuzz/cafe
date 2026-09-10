@@ -59,7 +59,7 @@ export function DialogContent({ children, className }: { children: React.ReactNo
       ref={dialogRef}
       onClose={handleClose}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg backdrop:bg-black/80 backdrop:backdrop-blur-sm",
+        "z-50 w-full max-w-lg gap-4 rounded-lg border bg-background p-6 shadow-lg backdrop:bg-black/50 open:animate-in open:fade-in-90 open:zoom-in-95",
         className
       )}
     >

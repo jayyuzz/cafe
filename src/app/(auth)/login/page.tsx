@@ -60,7 +60,7 @@ export default function LoginPage() {
             <Coffee className="w-10 h-10 text-amber-900" />
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold text-amber-950">Kafe Yandi</CardTitle>
+        <CardTitle className="text-2xl font-bold text-amber-950">MVE POS</CardTitle>
         <CardDescription className="text-gray-500">
           Masuk ke sistem kasir untuk melanjutkan
         </CardDescription>
@@ -72,7 +72,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="kasir@kafeyandi.com"
+              placeholder="admin@mve.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

@@ -47,13 +47,13 @@ export default function MenuPage() {
 
   const saveCategory = async () => {
     if (!catName) return;
-    const payload = { name: catName, outlet_id: "default-outlet-id" }; // Replace with real outlet_id if needed
+    const payload = { name: catName, outlet_id: "00000000-0000-0000-0000-000000000001" }; // Replace with real outlet_id if needed
     
     const res = catId 
       ? await supabase.from("categories").update(payload).eq("id", catId)
       : await supabase.from("categories").insert([payload]);
       
-    if (res.error) toast.error("Gagal menyimpan kategori");
+    if (res.error) toast.error("Gagal menyimpan kategori: " + res.error.message);
     else {
       toast.success("Kategori berhasil disimpan");
       setCatOpen(false);
@@ -67,27 +67,56 @@ export default function MenuPage() {
     fetchData();
   };
 
+  const [prodImage, setProdImage] = useState<File | null>(null);
+  const [prodImageUrl, setProdImageUrl] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+
   const saveProduct = async () => {
     if (!prodName || !prodPrice || !prodCat) return;
+    setIsUploading(true);
+
+    let finalImageUrl = prodImageUrl;
+
+    if (prodImage) {
+      const fileExt = prodImage.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("products")
+        .upload(filePath, prodImage);
+
+      if (uploadError) {
+        toast.error("Gagal upload gambar: " + uploadError.message);
+        setIsUploading(false);
+        return;
+      }
+
+      const { data } = supabase.storage.from("products").getPublicUrl(filePath);
+      finalImageUrl = data.publicUrl;
+    }
+
     const payload = {
       name: prodName,
       category_id: prodCat,
       price: Number(prodPrice),
       description: prodDesc,
       is_available: prodAvail,
-      outlet_id: "default-outlet-id"
+      image_url: finalImageUrl || null,
+      outlet_id: "00000000-0000-0000-0000-000000000001"
     };
 
     const res = prodId
       ? await supabase.from("products").update(payload).eq("id", prodId)
       : await supabase.from("products").insert([payload]);
 
-    if (res.error) toast.error("Gagal menyimpan produk");
+    if (res.error) toast.error("Gagal menyimpan produk: " + res.error.message);
     else {
       toast.success("Produk berhasil disimpan");
       setProdOpen(false);
       fetchData();
     }
+    setIsUploading(false);
   };
 
   const deleteProduct = async (id: string) => {
@@ -136,6 +165,15 @@ export default function MenuPage() {
                     <Input type="number" value={prodPrice} onChange={(e) => setProdPrice(e.target.value)} placeholder="Contoh: 25000" />
                   </div>
                   <div className="space-y-2">
+                    <label className="text-sm font-medium">Gambar Produk</label>
+                    <Input type="file" accept="image/*" onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setProdImage(e.target.files[0]);
+                      }
+                    }} />
+                    {prodImageUrl && !prodImage && <p className="text-xs text-muted-foreground">Gambar sudah ada. Upload baru untuk mengganti.</p>}
+                  </div>
+                  <div className="space-y-2">
                     <label className="text-sm font-medium">Deskripsi</label>
                     <Textarea value={prodDesc} onChange={(e) => setProdDesc(e.target.value)} placeholder="Opsional..." />
                   </div>
@@ -145,7 +183,9 @@ export default function MenuPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={saveProduct}>Simpan</Button>
+                  <Button onClick={saveProduct} disabled={isUploading}>
+                    {isUploading ? "Menyimpan..." : "Simpan"}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -154,8 +194,12 @@ export default function MenuPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {products.map(p => (
               <div key={p.id} className="border rounded-lg overflow-hidden flex flex-col bg-card">
-                <div className="h-32 bg-muted flex items-center justify-center">
-                  <UtensilsCrossed className="h-8 w-8 text-muted-foreground" />
+                <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <UtensilsCrossed className="h-8 w-8 text-muted-foreground" />
+                  )}
                 </div>
                 <div className="p-4 flex-1 flex flex-col">
                   <h3 className="font-semibold">{p.name}</h3>
@@ -169,7 +213,7 @@ export default function MenuPage() {
                       <Button variant="ghost" size="icon" onClick={() => {
                         setProdId(p.id); setProdName(p.name); setProdCat(p.category_id);
                         setProdPrice(p.price.toString()); setProdDesc(p.description || "");
-                        setProdAvail(p.is_available); setProdOpen(true);
+                        setProdAvail(p.is_available); setProdImageUrl(p.image_url || ""); setProdImage(null); setProdOpen(true);
                       }}>
                         <Edit className="h-4 w-4" />
                       </Button>

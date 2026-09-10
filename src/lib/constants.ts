@@ -1,4 +1,4 @@
-export const APP_NAME = "Kafe Yandi"
+export const APP_NAME = "MVE"
 export const TAX_PERCENTAGE = 10
 export const MAX_TABLES = 20
 

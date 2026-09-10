@@ -48,7 +48,7 @@ export default function PesananPage() {
     };
   }, [supabase]);
 
-  const updateOrderStatus = async (id: string, status: Order["status"]) => {
+  const updateOrderStatus = async (id: string, status: Order["status"], orderNumber: string) => {
     const { error } = await supabase
       .from("orders")
       .update({ status })
@@ -57,6 +57,16 @@ export default function PesananPage() {
       toast.error("Gagal update status");
     } else {
       toast.success(`Status diubah menjadi ${status}`);
+      
+      // Catat log
+      import("@/lib/log-activity").then(({ logActivity }) => {
+        logActivity(
+          "UPDATE_STATUS", 
+          `Status pesanan ${orderNumber} diubah menjadi ${status}`
+        );
+      });
+
+      fetchOrders();
     }
   };
 
@@ -162,22 +172,22 @@ export default function PesananPage() {
               {/* Actions */}
               <div className="flex gap-2 mt-2">
                 {order.status === "pending" && (
-                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => updateOrderStatus(order.id, "processing")}>
+                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => updateOrderStatus(order.id, "processing", order.order_number)}>
                     Proses
                   </Button>
                 )}
                 {order.status === "processing" && (
-                  <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => updateOrderStatus(order.id, "ready")}>
+                  <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => updateOrderStatus(order.id, "ready", order.order_number)}>
                     Siap
                   </Button>
                 )}
                 {order.status === "ready" && (
-                  <Button className="flex-1 bg-gray-800 hover:bg-gray-900" onClick={() => updateOrderStatus(order.id, "completed")}>
+                  <Button className="flex-1 bg-gray-800 hover:bg-gray-900" onClick={() => updateOrderStatus(order.id, "completed", order.order_number)}>
                     Selesai
                   </Button>
                 )}
                 {!["completed", "cancelled"].includes(order.status) && (
-                  <Button variant="destructive" className="flex-none" onClick={() => updateOrderStatus(order.id, "cancelled")}>
+                  <Button variant="destructive" className="flex-none" onClick={() => updateOrderStatus(order.id, "cancelled", order.order_number)}>
                     Batalkan
                   </Button>
                 )}

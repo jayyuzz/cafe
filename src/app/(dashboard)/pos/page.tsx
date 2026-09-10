@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatRupiah, cn } from "@/lib/utils";
 import { TAX_PERCENTAGE, MAX_TABLES } from "@/lib/constants";
 import { Product, Category, ProductVariant } from "@/types/database";
-import { Search, UtensilsCrossed, Trash2, Plus, Minus } from "lucide-react";
+import { Search, UtensilsCrossed, Trash2, Plus, Minus, MessageSquare, Calculator, Delete, ShoppingCart, Coffee, Utensils, CupSoda, Cookie, LayoutGrid, Cake } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,10 +27,14 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orderType, setOrderType] = useState<"dine_in" | "take_away">("dine_in");
   const [tableNumber, setTableNumber] = useState<number | null>(null);
-  const [customerName, setCustomerName] = useState("");
+  const [customerName, setCustomerName] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "qris">("cash");
   const [amountReceived, setAmountReceived] = useState<number>(0);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [showKeypad, setShowKeypad] = useState(false);
+  
+  // Mobile responsive state
+  const [isCartOpenMobile, setIsCartOpenMobile] = useState(false);
 
   const supabase = createClient();
 
@@ -68,7 +72,7 @@ export default function POSPage() {
   const updateQuantity = (index: number, delta: number) => {
     setCart((prev) => {
       const newCart = [...prev];
-      newCart[index].quantity += delta;
+      newCart[index] = { ...newCart[index], quantity: newCart[index].quantity + delta };
       if (newCart[index].quantity <= 0) {
         return newCart.filter((_, i) => i !== index);
       }
@@ -79,7 +83,7 @@ export default function POSPage() {
   const updateNotes = (index: number, notes: string) => {
     setCart((prev) => {
       const newCart = [...prev];
-      newCart[index].notes = notes;
+      newCart[index] = { ...newCart[index], notes };
       return newCart;
     });
   };
@@ -143,8 +147,16 @@ export default function POSPage() {
       toast.error("Gagal menyimpan item pesanan");
     } else {
       toast.success("Pesanan berhasil diproses");
-      setCart([]);
+      
+      // Catat log aktivitas
+      import("@/lib/log-activity").then(({ logActivity }) => {
+        logActivity(
+          "CREATE_ORDER", 
+          `Pesanan baru ${orderNumber} dibuat (Total: ${formatRupiah(total)})`
+        );
+      });
 
+      setCart([]);
       setCustomerName("");
       setTableNumber(null);
       setAmountReceived(0);
@@ -153,9 +165,9 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden relative">
       {/* Left Panel */}
-      <div className="w-[60%] flex flex-col p-4 border-r overflow-hidden">
+      <div className={cn("flex-1 flex-col p-4 border-r border-border overflow-hidden", isCartOpenMobile ? "hidden lg:flex" : "flex")}>
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -170,26 +182,42 @@ export default function POSPage() {
         </div>
         
         <Tabs defaultValue="semua" className="w-full mb-4" onValueChange={setActiveCategory}>
-          <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="semua">Semua</TabsTrigger>
-            {categories.map((c) => (
-              <TabsTrigger key={c.id} value={c.id}>{c.name}</TabsTrigger>
-            ))}
+          <TabsList className="w-full justify-start overflow-x-auto hide-scrollbar">
+            <TabsTrigger value="semua">
+              <LayoutGrid className="w-4 h-4 mr-2" />
+              Semua
+            </TabsTrigger>
+            {categories.map((c) => {
+              const lower = c.name.toLowerCase();
+              let Icon = UtensilsCrossed;
+              if (lower.includes("coffee") || lower.includes("kopi")) Icon = Coffee;
+              else if (lower.includes("non") || lower.includes("minuman") || lower.includes("soda")) Icon = CupSoda;
+              else if (lower.includes("berat") || lower.includes("makanan") || lower.includes("food")) Icon = Utensils;
+              else if (lower.includes("snack") || lower.includes("camilan")) Icon = Cookie;
+              else if (lower.includes("dessert") || lower.includes("kue") || lower.includes("cake")) Icon = Cake;
+
+              return (
+                <TabsTrigger key={c.id} value={c.id}>
+                  <Icon className="w-4 h-4 mr-2" />
+                  {c.name}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </Tabs>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto hide-scrollbar">
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => product.is_available && addToCart(product)}
                 className={cn(
-                  "border rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md",
+                  "border rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md bg-card",
                   !product.is_available && "opacity-50 cursor-not-allowed grayscale"
                 )}
               >
-                <div className="h-32 bg-muted flex items-center justify-center">
+                <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
@@ -197,8 +225,8 @@ export default function POSPage() {
                   )}
                 </div>
                 <div className="p-3">
-                  <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                  <p className="text-sm font-bold text-primary mt-1">{formatRupiah(product.price)}</p>
+                  <h3 className="font-semibold text-sm line-clamp-2">{product.name}</h3>
+                  <p className="font-bold text-primary text-sm mt-1">{formatRupiah(product.price)}</p>
                 </div>
               </div>
             ))}
@@ -207,35 +235,35 @@ export default function POSPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-[40%] flex flex-col bg-muted/30">
-        <div className="p-4 border-b flex justify-between items-center bg-background">
-          <h2 className="font-bold text-lg">Pesanan Baru</h2>
-          <Button variant="ghost" size="icon" onClick={() => setCart([])} disabled={cart.length === 0}>
-            <Trash2 className="h-4 w-4 text-red-500" />
-          </Button>
-        </div>
-
-        <div className="p-4 space-y-4 border-b bg-background">
-          <div className="flex gap-2">
-            <Button
-              variant={orderType === "dine_in" ? "default" : "outline"}
-              className="flex-1"
+      <div className={cn("w-full lg:w-[340px] shrink-0 flex-col bg-muted/10 overflow-y-auto hide-scrollbar", isCartOpenMobile ? "flex" : "hidden lg:flex")}>
+        <div className="p-4 border-b border-border bg-background/50 shrink-0">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-semibold">Pesanan Baru</h2>
+            <Button variant="ghost" size="icon" onClick={() => setCart([])} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex gap-2 mb-3">
+            <Button 
+              variant={orderType === "dine_in" ? "default" : "outline"} 
+              className="flex-1 text-xs h-8"
               onClick={() => setOrderType("dine_in")}
             >
-              Makan di tempat
+              Makan Sini
             </Button>
-            <Button
-              variant={orderType === "take_away" ? "default" : "outline"}
-              className="flex-1"
-              onClick={() => setOrderType("take_away")}
+            <Button 
+              variant={orderType === "take_away" ? "default" : "outline"} 
+              className="flex-1 text-xs h-8"
+              onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
             >
-              Bawa pulang
+              Bawa Pulang
             </Button>
           </div>
 
           {orderType === "dine_in" && (
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            <select 
+              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mb-3"
               value={tableNumber || ""}
               onChange={(e) => setTableNumber(Number(e.target.value))}
             >
@@ -247,51 +275,66 @@ export default function POSPage() {
           )}
           
           <Input
+            className="h-8 text-xs"
             placeholder="Nama pelanggan (opsional)"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="overflow-y-auto p-3 space-y-2 h-[260px] shrink-0 hide-scrollbar bg-background/30">
           {cart.map((item, index) => {
             const itemPrice = item.product.price + (item.variant?.additional_price || 0);
             return (
-              <div key={`${item.product.id}-${item.variant?.id}-${index}`} className="flex flex-col gap-2 p-3 bg-background rounded-lg border">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium text-sm">{item.product.name}</h4>
-                    {item.variant && <p className="text-xs text-muted-foreground">{item.variant.name}</p>}
-                    <p className="text-xs font-semibold">{formatRupiah(itemPrice)}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(index, -1)}>
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="text-sm w-4 text-center">{item.quantity}</span>
-                    <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(index, 1)}>
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
+              <div key={`${item.product.id}-${item.variant?.id}-${index}`} className="flex items-center gap-2 p-2 bg-background rounded-md border shadow-sm">
+                <div className="flex-1 min-w-0 flex items-center">
+                  <h4 className="font-semibold text-xs truncate" title={item.product.name}>
+                    {item.product.name}
+                    {item.variant && <span className="font-normal text-muted-foreground ml-1">({item.variant.name})</span>}
+                  </h4>
                 </div>
-                <Input
-                  placeholder="Catatan..."
-                  className="h-7 text-xs"
-                  value={item.notes}
-                  onChange={(e) => updateNotes(index, e.target.value)}
-                />
+                
+                <div className="text-xs font-bold text-primary shrink-0 mr-2">
+                  {formatRupiah(itemPrice)}
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-6 w-6 rounded-md mr-1 shrink-0 transition-colors",
+                    item.notes ? "text-primary bg-primary/10 hover:bg-primary/20" : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => {
+                    const note = window.prompt(`Catatan untuk ${item.product.name}:`, item.notes);
+                    if (note !== null) updateNotes(index, note);
+                  }}
+                  title={item.notes ? `Catatan: ${item.notes}` : "Tambah catatan"}
+                >
+                  <MessageSquare className={cn("h-4 w-4", item.notes && "fill-current")} />
+                </Button>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="outline" size="icon" className="h-6 w-6 rounded-md" onClick={() => updateQuantity(index, -1)}>
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
+                  <Button variant="outline" size="icon" className="h-6 w-6 rounded-md" onClick={() => updateQuantity(index, 1)}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             );
           })}
           {cart.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+            <div className="h-full flex flex-col items-center justify-center text-muted-foreground mt-10">
               <UtensilsCrossed className="h-12 w-12 mb-2 opacity-20" />
               <p>Belum ada pesanan</p>
             </div>
           )}
         </div>
 
-        <div className="p-4 bg-background border-t space-y-3">
+        <div className="p-4 border-t border-border space-y-3 shrink-0 mt-auto bg-background/50">
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatRupiah(subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Diskon</span><span>-{formatRupiah(discount)}</span></div>
@@ -318,19 +361,56 @@ export default function POSPage() {
 
           {paymentMethod === "cash" && (
             <div className="space-y-2">
-              <Input
-                type="number"
-                placeholder="Nominal uang diterima"
-                value={amountReceived || ""}
-                onChange={(e) => setAmountReceived(Number(e.target.value))}
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Nominal uang diterima"
+                  value={amountReceived || ""}
+                  onChange={(e) => setAmountReceived(Number(e.target.value))}
+                  className="flex-1 text-lg font-semibold"
+                />
+                <Button 
+                  variant={showKeypad ? "default" : "outline"} 
+                  size="icon" 
+                  onClick={() => setShowKeypad(!showKeypad)}
+                >
+                  <Calculator className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {showKeypad && (
+                <div className="grid grid-cols-3 gap-2 bg-muted/20 p-2 rounded-lg border">
+                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "000"].map((btn) => (
+                    <Button 
+                      key={btn} 
+                      variant={btn === "C" ? "destructive" : "outline"} 
+                      className="h-10 font-semibold text-lg"
+                      onClick={() => {
+                        if (btn === "C") setAmountReceived(0);
+                        else {
+                          const currentStr = (amountReceived || 0).toString();
+                          // Prevent leading zeros issues
+                          const newVal = currentStr === "0" && btn !== "000" ? btn : currentStr + btn;
+                          setAmountReceived(Number(newVal));
+                        }
+                      }}
+                    >
+                      {btn}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-2">
+                <Button variant="destructive" size="sm" onClick={() => setAmountReceived(0)} className="min-w-[40px]">
+                  C
+                </Button>
                 {[10000, 20000, 50000, 100000].map(amt => (
-                  <Button key={amt} variant="outline" size="sm" onClick={() => setAmountReceived(amt)} className="flex-1 min-w-[70px]">
-                    {amt / 1000}k
+                  <Button key={amt} variant="outline" size="sm" onClick={() => setAmountReceived(prev => (prev || 0) + amt)} className="flex-1 min-w-[60px]">
+                    +{amt / 1000}k
                   </Button>
                 ))}
-                <Button variant="secondary" size="sm" onClick={() => setAmountReceived(total)} className="flex-1 min-w-[70px]">Pas</Button>
+                <Button variant="secondary" size="sm" onClick={() => setAmountReceived(total)} className="flex-1 min-w-[60px]">Pas</Button>
               </div>
               <div className="flex justify-between text-sm font-medium pt-2 text-primary">
                 <span>Kembalian:</span>
@@ -347,6 +427,26 @@ export default function POSPage() {
             {isProcessing ? "Memproses..." : "Proses Pesanan"}
           </Button>
         </div>
+      </div>
+
+      {/* Mobile Cart Toggle Button */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-50">
+        <Button 
+          onClick={() => setIsCartOpenMobile(!isCartOpenMobile)} 
+          className="rounded-full h-14 px-6 shadow-xl"
+        >
+          {isCartOpenMobile ? (
+            <>
+              <UtensilsCrossed className="mr-2 h-5 w-5" />
+              Menu
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Pesanan ({cart.length})
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );

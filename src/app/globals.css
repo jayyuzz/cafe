@@ -95,6 +95,69 @@
     --input: 24 9.8% 20%;
     --ring: 0 0% 83.1%;
   }
+
+  .theme-japandi {
+    --background: 45 40% 98%;
+    --foreground: 20 14% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 15%;
+    --primary: 30 40% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 30 40% 35%;
+    --muted: 40 10% 94%;
+    --muted-foreground: 25 5% 45%;
+    --accent: 40 20% 90%;
+    --accent-foreground: 30 40% 35%;
+    --border: 40 10% 85%;
+    --input: 40 10% 85%;
+    --ring: 30 40% 35%;
+    --radius: 0.25rem;
+  }
+
+  .theme-industrial {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 13%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 13%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 35 100% 50%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 95%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 35 100% 50%;
+    --radius: 0rem;
+  }
+
+  .theme-earthy {
+    --background: 35 30% 95%;
+    --foreground: 20 30% 20%;
+    --card: 35 30% 97%;
+    --card-foreground: 20 30% 20%;
+    --popover: 35 30% 97%;
+    --popover-foreground: 20 30% 20%;
+    --primary: 15 50% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 100 20% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 35 20% 85%;
+    --muted-foreground: 20 20% 40%;
+    --accent: 100 20% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border: 35 20% 80%;
+    --input: 35 20% 80%;
+    --ring: 15 50% 50%;
+    --radius: 1rem;
+  }
 }
 
 @layer base {
@@ -104,4 +167,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

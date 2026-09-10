@@ -38,7 +38,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     if (pathname?.startsWith("/pesanan")) return "Pesanan";
     if (pathname?.startsWith("/menu")) return "Menu";
     if (pathname?.startsWith("/laporan")) return "Laporan";
-    return "Kafe Yandi";
+    return "MVE";
   };
 
   return (

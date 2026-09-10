@@ -11,6 +11,10 @@ import {
   BarChart3,
   LogOut,
   X,
+  Shield,
+  KeySquare,
+  Calendar,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,18 +22,27 @@ import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
+interface ExtendedUser extends User {
+  appRole?: string;
+  appName?: string;
+  permissions?: string[];
+}
+
 interface SidebarProps {
-  user: User | null;
+  user: ExtendedUser | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Kasir / POS", href: "/pos", icon: ShoppingCart },
-  { name: "Pesanan", href: "/pesanan", icon: ClipboardList },
-  { name: "Menu", href: "/menu", icon: UtensilsCrossed },
-  { name: "Laporan", href: "/laporan", icon: BarChart3 },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
+  { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
+  { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
+  { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
+  { name: "Laporan", href: "/laporan", icon: BarChart3, permission: "laporan" },
+  { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
+  { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
+  { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },
 ];
 
 export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
@@ -65,10 +78,10 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-gray-200">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-amber-900">
+        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-border">
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
             <Coffee className="h-6 w-6" />
-            <span>Kafe Yandi</span>
+            <span>MVE</span>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -76,7 +89,9 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 px-4 py-4 overflow-y-auto">
-          {navigation.map((item) => {
+          {navigation
+            .filter((item) => user?.permissions?.includes(item.permission) || item.permission === "dashboard")
+            .map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
             // Exact match for dashboard
             const isActuallyActive = item.href === "/" ? pathname === "/" : isActive;
@@ -87,8 +102,8 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActuallyActive
-                    ? "bg-amber-100 text-amber-900"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
                 onClick={() => onClose()}
               >
@@ -99,12 +114,29 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           })}
         </nav>
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-border p-4">
+          <div className="mb-4">
+            <select
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              onChange={(e) => {
+                const theme = e.target.value;
+                document.documentElement.className = theme;
+                localStorage.setItem("theme", theme);
+              }}
+              defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "" : ""}
+            >
+              <option value="">Default (Standard)</option>
+              <option value="theme-japandi">Japandi (Terang & Bersih)</option>
+              <option value="theme-industrial">Industrial (Gelap & Maskulin)</option>
+              <option value="theme-earthy">Earthy (Hangat & Alam)</option>
+            </select>
+          </div>
+
           <div className="mb-4 px-2">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {user?.user_metadata?.full_name || user?.email || "Kasir"}
+            <p className="text-sm font-medium text-foreground">{user?.email}</p>
+            <p className="text-xs text-muted-foreground capitalize">
+              Role: {user?.appName || user?.appRole || 'Loading...'}
             </p>
-            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
           <Button
             variant="outline"

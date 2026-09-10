@@ -9,10 +9,22 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: ActivityLog
+        Insert: Partial<ActivityLog> & Pick<ActivityLog, 'outlet_id' | 'action' | 'description'>
+        Update: Partial<ActivityLog>
+        Relationships: []
+      }
       outlets: {
         Row: Outlet
         Insert: Partial<Outlet> & Pick<Outlet, 'name'>
         Update: Partial<Outlet>
+        Relationships: []
+      }
+      roles: {
+        Row: Role
+        Insert: Partial<Role> & Pick<Role, 'id' | 'name'>
+        Update: Partial<Role>
         Relationships: []
       }
       users: {
@@ -57,6 +69,12 @@ export type Database = {
         Update: Partial<Discount>
         Relationships: []
       }
+      reservations: {
+        Row: Reservation
+        Insert: Partial<Reservation> & Pick<Reservation, 'outlet_id' | 'customer_name' | 'reservation_date' | 'reservation_time'>
+        Update: Partial<Reservation>
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -90,12 +108,18 @@ export type Outlet = {
   created_at: string
 }
 
+export type Role = {
+  id: string
+  name: string
+  permissions: string[]
+}
+
 export type User = {
   id: string
   outlet_id: string | null
   email: string
   name: string
-  role: 'super_admin' | 'admin' | 'cashier' | 'customer'
+  role: 'super_admin' | 'admin' | 'cashier' | 'chef' | 'customer'
   is_member: boolean
   member_discount: number
   is_active: boolean
@@ -173,6 +197,15 @@ export type OrderItem = {
   created_at: string
 }
 
+export type ActivityLog = {
+  id: string
+  outlet_id: string
+  user_name?: string
+  action: string
+  description: string
+  created_at: string
+}
+
 export type Discount = {
   id: string
   outlet_id: string
@@ -185,4 +218,19 @@ export type Discount = {
   valid_from: string | null
   valid_until: string | null
   created_at: string
+}
+
+export type Reservation = {
+  id: string
+  outlet_id: string
+  customer_name: string
+  customer_phone: string | null
+  reservation_date: string
+  reservation_time: string
+  party_size: number
+  table_number: number | null
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  notes: string | null
+  created_at: string
+  updated_at: string
 }

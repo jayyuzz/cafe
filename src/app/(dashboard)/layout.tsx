@@ -24,14 +24,47 @@ export default function DashboardLayout({
       
       if (error || !session) {
         router.push("/login");
-      } else {
-        setUser(session.user);
+        return;
       }
+      
+      // Fetch user profile to get role
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role, name')
+        .eq('id', session.user.id)
+        .single();
+        
+      let permissions: string[] = [];
+      let roleName = 'User';
+      
+      if (userData?.role) {
+        roleName = userData.name;
+        // Fetch role permissions
+        const { data: roleData } = await supabase
+          .from('roles')
+          .select('permissions')
+          .eq('id', userData.role)
+          .single();
+          
+        if (roleData) {
+          permissions = roleData.permissions;
+        }
+      }
+
+      // Add custom properties to the user object to pass to sidebar
+      const extendedUser = {
+        ...session.user,
+        appRole: userData?.role || 'customer',
+        appName: roleName,
+        permissions
+      };
+      
+      setUser(extendedUser as any);
       setLoading(false);
     };
 
     checkUser();
-  }, [router, supabase.auth]);
+  }, [router, supabase]);
 
   if (loading) {
     return <div className="flex h-screen w-full items-center justify-center bg-gray-50">Memuat...</div>;

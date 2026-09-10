@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kafe Yandi",
-  description: "Aplikasi Kasir Kafe Yandi",
+  title: "MVE POS",
+  description: "Aplikasi Kasir MVE",
 };
 
 export default function RootLayout({
@@ -16,8 +17,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body className={inter.className}>
+    <html lang="id" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('theme');
+                if (theme) {
+                  document.documentElement.className = theme;
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.className)} suppressHydrationWarning>
         {children}
         <Toaster />
       </body>
