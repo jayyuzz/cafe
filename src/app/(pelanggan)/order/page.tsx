@@ -370,7 +370,7 @@ function OrderPageContent() {
                   className="h-11 w-11 rounded-2xl object-cover shadow-sm" />
               ) : (
                 <div className="h-11 w-11 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden">
-                  <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-cover scale-[1.3]" />
+                  <img src="/mve-logo.png" alt="MVE" className="w-full h-full object-contain p-1" />
                 </div>
               )}
               <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-[#f8f7f4]" />

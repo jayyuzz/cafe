@@ -186,7 +186,7 @@ export default function QRMejaPage() {
           <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center gap-3 w-full">
             <div className="flex items-center gap-2 mb-1">
               <div className="h-6 w-6 rounded flex items-center justify-center overflow-hidden">
-                <img src="/mve-logo.png" alt="Logo" className="w-full h-full object-cover scale-[1.3]" />
+                <img src="/mve-logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
               </div>
               <span className="font-bold text-base">{outlet?.name ?? "Kafe"}</span>
             </div>
