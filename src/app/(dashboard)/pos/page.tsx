@@ -35,6 +35,7 @@ export default function POSPage() {
   
   // Mobile responsive state
   const [isCartOpenMobile, setIsCartOpenMobile] = useState(false);
+  const [cetakStruk, setCetakStruk] = useState(false);
 
   const [outlet, setOutlet] = useState<any>(null);
 
@@ -159,6 +160,10 @@ export default function POSPage() {
           `Pesanan baru ${orderNumber} dibuat (Total: ${formatRupiah(total)})`
         );
       });
+
+      if (cetakStruk) {
+        window.open(`/pos/struk/${order.id}`, "_blank", "width=400,height=600");
+      }
 
       setCart([]);
       setCustomerName("");
@@ -424,6 +429,19 @@ export default function POSPage() {
               </div>
             </div>
           )}
+          
+          <div className="flex items-center gap-2 mb-3 mt-2 px-1">
+            <input 
+              type="checkbox" 
+              id="cetak-struk" 
+              checked={cetakStruk} 
+              onChange={(e) => setCetakStruk(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="cetak-struk" className="text-sm font-medium cursor-pointer">
+              Cetak Struk
+            </label>
+          </div>
 
           <Button 
             className="w-full py-6 text-lg"

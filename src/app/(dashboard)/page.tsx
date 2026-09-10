@@ -12,6 +12,8 @@ export default function DashboardPage() {
   const [totalPenjualan, setTotalPenjualan] = useState(0);
   const [jumlahTransaksi, setJumlahTransaksi] = useState(0);
   const [rataRata, setRataRata] = useState(0);
+  const [totalTunai, setTotalTunai] = useState(0);
+  const [totalQris, setTotalQris] = useState(0);
   const [pesananAktif, setPesananAktif] = useState(0);
   const [chartData, setChartData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
@@ -38,7 +40,12 @@ export default function DashboardPage() {
         });
 
         const total = todayOrders.reduce((sum, o) => sum + o.total, 0);
+        const tunai = todayOrders.filter(o => o.payment_method === 'cash').reduce((sum, o) => sum + o.total, 0);
+        const qris = todayOrders.filter(o => o.payment_method === 'qris').reduce((sum, o) => sum + o.total, 0);
+        
         setTotalPenjualan(total);
+        setTotalTunai(tunai);
+        setTotalQris(qris);
         setJumlahTransaksi(todayOrders.length);
         setRataRata(todayOrders.length ? total / todayOrders.length : 0);
 
@@ -111,6 +118,16 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatRupiah(totalPenjualan)}</div>
+            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Tunai: <span className="font-medium text-foreground">{formatRupiah(totalTunai)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                QRIS: <span className="font-medium text-foreground">{formatRupiah(totalQris)}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
