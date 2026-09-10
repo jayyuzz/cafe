@@ -159,9 +159,30 @@ function OrderPageContent() {
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      let q = supabase.from("outlets").select("*");
-      if (outletParam) q = q.eq("id", outletParam);
-      const { data: outletData } = await q.limit(1).single();
+
+      // Coba cari outlet berdasarkan param, fallback ke outlet pertama
+      let outletData = null;
+
+      if (outletParam) {
+        const { data } = await supabase
+          .from("outlets")
+          .select("*")
+          .eq("id", outletParam)
+          .single();
+        outletData = data;
+      }
+
+      // Fallback: ambil outlet pertama jika param kosong atau tidak ditemukan
+      if (!outletData) {
+        const { data } = await supabase
+          .from("outlets")
+          .select("*")
+          .eq("is_active", true)
+          .limit(1)
+          .single();
+        outletData = data;
+      }
+
       if (outletData) setOutlet(outletData);
 
       const id = outletData?.id;

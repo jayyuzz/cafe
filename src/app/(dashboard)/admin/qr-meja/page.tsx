@@ -20,7 +20,12 @@ export default function QRMejaPage() {
   // Fetch outlet
   useEffect(() => {
     async function fetchOutlet() {
-      const { data } = await supabase.from("outlets").select("*").limit(1).single();
+      const { data } = await supabase
+        .from("outlets")
+        .select("*")
+        .eq("is_active", true)
+        .limit(1)
+        .single();
       if (data) setOutlet(data);
     }
     fetchOutlet();
