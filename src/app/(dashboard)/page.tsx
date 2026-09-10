@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah, cn, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Receipt, TrendingUp, Clock } from "lucide-react";
+import { DollarSign, Receipt, TrendingUp, Clock, Banknote, QrCode } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Order } from "@/types/database";
 
@@ -118,14 +118,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatRupiah(totalPenjualan)}</div>
-            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                Tunai: <span className="font-medium text-foreground">{formatRupiah(totalTunai)}</span>
+            <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Banknote className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Tunai</span>
+                </div>
+                <span className="font-semibold text-foreground">{formatRupiah(totalTunai)}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                QRIS: <span className="font-medium text-foreground">{formatRupiah(totalQris)}</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                  <span>QRIS</span>
+                </div>
+                <span className="font-semibold text-foreground">{formatRupiah(totalQris)}</span>
               </div>
             </div>
           </CardContent>
