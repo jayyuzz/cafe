@@ -29,10 +29,9 @@ export default function QRMejaPage() {
       if (data) setOutlet(data);
     }
     fetchOutlet();
-    // Always use production URL for QR codes so they work when scanned by customers.
-    // Falls back to current origin when env var is not set (local dev).
-    const productionUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
-    setBaseUrl(productionUrl);
+    // Always use the current domain so if the cashier opens cafe.mve.my.id, 
+    // the QR code automatically points there without needing to configure env vars.
+    setBaseUrl(window.location.origin);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Generate QR Code whenever selection changes
