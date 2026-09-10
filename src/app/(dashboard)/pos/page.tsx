@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah, cn } from "@/lib/utils";
-import { TAX_PERCENTAGE, MAX_TABLES } from "@/lib/constants";
+import { MAX_TABLES } from "@/lib/constants";
 import { Product, Category, ProductVariant } from "@/types/database";
 import { Search, UtensilsCrossed, Trash2, Plus, Minus, MessageSquare, Calculator, Delete, ShoppingCart, Coffee, Utensils, CupSoda, Cookie, LayoutGrid, Cake } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,8 @@ export default function POSPage() {
   // Mobile responsive state
   const [isCartOpenMobile, setIsCartOpenMobile] = useState(false);
 
+  const [outlet, setOutlet] = useState<any>(null);
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -45,6 +47,9 @@ export default function POSPage() {
 
       const { data: prods } = await supabase.from("products").select("*, product_variants(*)").order("name");
       if (prods) setProducts(prods);
+
+      const { data: out } = await supabase.from("outlets").select("*").eq("is_active", true).limit(1).single();
+      if (out) setOutlet(out);
     }
     fetchData();
   }, [supabase]);
@@ -72,10 +77,8 @@ export default function POSPage() {
   const updateQuantity = (index: number, delta: number) => {
     setCart((prev) => {
       const newCart = [...prev];
-      newCart[index] = { ...newCart[index], quantity: newCart[index].quantity + delta };
-      if (newCart[index].quantity <= 0) {
-        return newCart.filter((_, i) => i !== index);
-      }
+      newCart[index].quantity += delta;
+      if (newCart[index].quantity <= 0) return newCart.filter((_, i) => i !== index);
       return newCart;
     });
   };
@@ -88,13 +91,13 @@ export default function POSPage() {
     });
   };
 
-  const subtotal = cart.reduce((sum, item) => {
-    const price = item.product.price + (item.variant?.additional_price || 0);
-    return sum + price * item.quantity;
-  }, 0);
-
-  const discount = 0; // Implement discount logic if needed
-  const tax = (subtotal - discount) * (TAX_PERCENTAGE / 100);
+  const subtotal = cart.reduce((sum, item) => sum + (item.product.price + (item.variant?.additional_price || 0)) * item.quantity, 0);
+  const discount = 0; // TBD feature
+  
+  // Dynamic tax calculation based on outlet settings
+  const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
+  const tax = (subtotal - discount) * (taxPercentage / 100);
+  
   const total = subtotal - discount + tax;
 
   const handleProcessOrder = async () => {
@@ -116,6 +119,7 @@ export default function POSPage() {
       status: "pending",
       subtotal,
       tax_amount: tax,
+      tax_percentage: taxPercentage,
       discount_amount: discount,
       total: total,
       payment_method: paymentMethod,
@@ -338,7 +342,9 @@ export default function POSPage() {
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatRupiah(subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Diskon</span><span>-{formatRupiah(discount)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">PB1 (10%)</span><span>{formatRupiah(tax)}</span></div>
+            {outlet?.tax_enabled && (
+              <div className="flex justify-between"><span className="text-muted-foreground">PB1 ({taxPercentage}%)</span><span>{formatRupiah(tax)}</span></div>
+            )}
             <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Total</span><span>{formatRupiah(total)}</span></div>
           </div>
 

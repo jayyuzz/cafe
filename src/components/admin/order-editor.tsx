@@ -28,6 +28,7 @@ export function OrderEditor({ order, isOpen, onClose, onSaved }: { order: any, i
   const [status, setStatus] = useState<"pending" | "processing" | "ready" | "completed" | "cancelled">("pending");
   const [items, setItems] = useState<EditorItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [outlet, setOutlet] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const supabase = createClient();
 
@@ -49,16 +50,29 @@ export function OrderEditor({ order, isOpen, onClose, onSaved }: { order: any, i
   }, [order, isOpen]);
 
   useEffect(() => {
-    if (isOpen && products.length === 0) {
-      supabase.from("products").select("*, product_variants(*)").eq("is_available", true).then(({ data }) => {
-        if (data) setProducts(data);
-      });
+    if (isOpen) {
+      if (products.length === 0) {
+        supabase.from("products").select("*, product_variants(*)").eq("is_available", true).then(({ data }) => {
+          if (data) setProducts(data);
+        });
+      }
+      if (!outlet) {
+        supabase.from("outlets").select("*").eq("is_active", true).limit(1).single().then(({ data }) => {
+          if (data) setOutlet(data);
+        });
+      }
     }
-  }, [isOpen, supabase, products.length]);
+  }, [isOpen, supabase, products.length, outlet]);
 
   const subtotal = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
   const discount = order?.discount_amount || 0;
-  const tax = order?.tax_amount ? (subtotal - discount) * (TAX_PERCENTAGE / 100) : 0;
+  
+  // Dynamic tax calculation
+  // If the order previously had tax (or outlet has it enabled), recalculate it
+  const hasTax = order?.tax_amount > 0 || outlet?.tax_enabled;
+  const taxPercentage = outlet?.tax_percentage || 0;
+  const tax = hasTax ? (subtotal - discount) * (taxPercentage / 100) : 0;
+  
   const total = subtotal - discount + tax;
 
   const updateQuantity = (index: number, delta: number) => {
@@ -126,6 +140,7 @@ export function OrderEditor({ order, isOpen, onClose, onSaved }: { order: any, i
         status,
         subtotal,
         tax_amount: tax,
+        tax_percentage: taxPercentage,
         total,
       }).eq("id", order.id);
 
@@ -225,10 +240,13 @@ export function OrderEditor({ order, isOpen, onClose, onSaved }: { order: any, i
         </div>
 
         <div className="p-6 border-t bg-background">
-          <div className="space-y-2 mb-6">
+          <div className="mt-6 space-y-2 border-t pt-4">
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>{formatRupiah(subtotal)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Pajak (10%)</span><span>{formatRupiah(tax)}</span></div>
-            <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Total Akhir</span><span className="text-primary">{formatRupiah(total)}</span></div>
+            {discount > 0 && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Diskon</span><span className="text-red-500">-{formatRupiah(discount)}</span></div>}
+            {hasTax && (
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Pajak ({taxPercentage}%)</span><span>{formatRupiah(tax)}</span></div>
+            )}
+            <div className="flex justify-between font-bold text-lg pt-2"><span>Total</span><span>{formatRupiah(total)}</span></div>
           </div>
 
           <div className="flex gap-3 justify-end">

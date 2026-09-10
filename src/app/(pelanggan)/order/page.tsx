@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah, cn } from "@/lib/utils";
-import { TAX_PERCENTAGE } from "@/lib/constants";
+
 import type { Category, Product, ProductVariant, Outlet } from "@/types/database";
 import {
   ShoppingCart, Search, UtensilsCrossed, Plus, Minus, Trash2,
@@ -236,7 +236,8 @@ function OrderPageContent() {
     const price = i.product.price + (i.variant?.additional_price ?? 0);
     return s + price * i.quantity;
   }, 0);
-  const tax = subtotal * (TAX_PERCENTAGE / 100);
+  const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
+  const tax = subtotal * (taxPercentage / 100);
   const total = subtotal + tax;
 
   /* ── Submit ────────────────────────────────────────────────────────────── */
@@ -259,7 +260,7 @@ function OrderPageContent() {
       status: "pending",
       subtotal,
       tax_amount: tax,
-      tax_percentage: TAX_PERCENTAGE,
+      tax_percentage: taxPercentage,
       discount_amount: 0,
       total,
       payment_method: paymentMethod,
@@ -789,10 +790,12 @@ function OrderPageContent() {
                   <span>Subtotal ({cartCount} item)</span>
                   <span>{formatRupiah(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>PB1 ({TAX_PERCENTAGE}%)</span>
-                  <span>{formatRupiah(tax)}</span>
-                </div>
+                {outlet?.tax_enabled && (
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>PB1 ({taxPercentage}%)</span>
+                    <span>{formatRupiah(tax)}</span>
+                  </div>
+                )}
                 <div className="h-px bg-border my-1" />
                 <div className="flex justify-between font-bold text-sm">
                   <span>Total</span>
