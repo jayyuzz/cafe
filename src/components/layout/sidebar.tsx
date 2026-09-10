@@ -126,7 +126,7 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 document.documentElement.className = theme;
                 localStorage.setItem("theme", theme);
               }}
-              defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "" : ""}
+              defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "theme-earthy" : "theme-earthy"}
             >
               <option value="">Default (Standard)</option>
               <option value="theme-japandi">Japandi (Terang & Bersih)</option>
