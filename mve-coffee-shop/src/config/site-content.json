@@ -1,0 +1,111 @@
+{
+  "brand": {
+    "name": "MVE Coffee",
+    "tagline": "Kedai Kopi Pilihan di Kotamobagu, Sulut",
+    "logo": "/mve-logo.png",
+    "copyright": "© 2025 MVE Coffee. All rights reserved."
+  },
+
+  "hero": {
+    "heading": "Nikmati Kopi\nPilihan Terbaik",
+    "subtitle": "Rasakan kehangatan dan kenikmatan aroma kopi terbaik dari biji pilihan nusantara. Diracik sepenuh hati untuk menyempurnakan setiap momen santai dan produktif Anda di Kotamobagu.",
+    "ctaPrimary": { "text": "Order Now!", "href": "#menu" },
+    "ctaSecondary": { "text": "Tentang Kami", "href": "#about" },
+    "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800",
+    "stats": [
+      { "value": "100%", "label": "Biji Kopi Asli" },
+      { "value": "4.9★", "label": "Kepuasan Rasa" },
+      { "value": "Daily", "label": "Fresh Roasted" }
+    ]
+  },
+
+  "featuredDrinks": {
+    "sectionLabel": "Pilihan Spesial",
+    "heading": "Menu Unggulan",
+    "quote": "Setiap cangkir kami hadirkan dengan cinta, kehangatan, dan cita rasa terbaik untuk menemani harimu.",
+    "items": [
+      {
+        "id": "cappuccino",
+        "name": "Cappuccino",
+        "description": "Perpaduan espresso kaya rasa dengan steamed milk lembut dan lapisan busa tebal bertekstur velvet.",
+        "price": "Rp 25.000",
+        "image": "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400",
+        "tag": "Favorit"
+      },
+      {
+        "id": "americano",
+        "name": "Americano",
+        "description": "Espresso murni pilihan berpadu dengan air panas murni, menghasilkan rasa kopi yang bersih dan berkarakter.",
+        "price": "Rp 20.000",
+        "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=400",
+        "tag": "Klasik"
+      },
+      {
+        "id": "hazelnut-latte",
+        "name": "Hazelnut Latte",
+        "description": "Espresso lembut dikombinasikan dengan gurihnya sirup hazelnut panggang dan susu creamy premium.",
+        "price": "Rp 30.000",
+        "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400",
+        "tag": "Best Seller"
+      }
+    ]
+  },
+
+  "about": {
+    "sectionLabel": "Kenal Lebih Dekat",
+    "heading": "Kenapa Memilih MVE?",
+    "featureTitle": "Hangat & Terpercaya",
+    "featureDescription": "Di MVE Coffee, setiap cangkir kopi diseduh dengan sepenuh hati menggunakan biji kopi nusantara pilihan berkualitas terbaik. Kami menghadirkan ruang yang nyaman dan bersahabat — tempat sempurna untuk memulai pagi, berbagi cerita, atau menemukan inspirasi di setiap tegukan.",
+    "highlights": [
+      { "value": "100%", "label": "Biji Kopi Pilihan Nusantara" },
+      { "value": "Nyaman", "label": "Suasana Santai & Produktif" }
+    ],
+    "cta": { "text": "Selengkapnya", "href": "#contact" },
+    "image": "https://images.unsplash.com/photo-1447933601403-56dc2df4e0db?w=600"
+  },
+
+  "contact": {
+    "heading": "Temukan Kami",
+    "sectionLabel": "Lokasi & Kontak",
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63812.27!2d124.28!3d0.72!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x327e29ce0e2045e7%3A0x4e74a82b0c82e8a!2sKotamobagu%2C+Sulawesi+Utara!5e0!3m2!1sen!2sid!4v1",
+    "address": "Kotamobagu, Sulawesi Utara",
+    "hours": "Senin - Minggu: 08.00 - 22.00 WITA",
+    "phone": "0812-3456-7890",
+    "email": "info@mvecoffee.id",
+    "instagram": "@mvecoffee",
+    "instagramUrl": "https://instagram.com/mvecoffee",
+    "whatsappNumber": "6281234567890",
+    "whatsappMessage": "Halo MVE Coffee! Saya ingin bertanya..."
+  },
+
+  "footer": {
+    "description": "Kedai kopi pilihan di Kotamobagu yang menghadirkan cita rasa kopi nusantara terbaik dalam suasana hangat dan bersahabat.",
+    "menuLinks": [
+      { "label": "Home", "href": "#home" },
+      { "label": "Menu", "href": "#menu" },
+      { "label": "About", "href": "#about" },
+      { "label": "Contact", "href": "#contact" }
+    ],
+    "infoLinks": [
+      { "label": "Jam Buka", "href": "#contact" },
+      { "label": "Lokasi", "href": "#contact" },
+      { "label": "Karir", "href": "#", "badge": "Segera" }
+    ],
+    "socialMedia": {
+      "instagram": "https://instagram.com/mvecoffee",
+      "facebook": "https://facebook.com/mvecoffee",
+      "whatsapp": "https://wa.me/6281234567890"
+    }
+  },
+
+  "navbar": {
+    "links": [
+      { "label": "Home", "href": "#home" },
+      { "label": "Menu", "href": "#menu" },
+      { "label": "About", "href": "#about" },
+      { "label": "Contact", "href": "#contact" }
+    ],
+    "ctaText": "Order Now",
+    "ctaHref": "#menu"
+  }
+}

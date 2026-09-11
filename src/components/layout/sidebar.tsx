@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -15,6 +16,7 @@ import {
   Calendar,
   Settings,
   QrCode,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [isMinimized, setIsMinimized] = useState(true);
 
   const handleLogout = async () => {
     try {
@@ -74,80 +77,98 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <div
+        onMouseEnter={() => setIsMinimized(false)}
+        onMouseLeave={() => setIsMinimized(true)}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white border-r border-gray-200 transition-transform duration-300 lg:static lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border transition-all duration-300",
+          isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64",
+          "lg:translate-x-0 lg:static",
+          isMinimized ? "lg:w-[76px]" : "lg:w-64"
         )}
       >
-        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-border">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <div className="h-8 w-8 rounded overflow-hidden flex items-center justify-center">
+        <div className={cn("flex h-16 shrink-0 items-center border-b border-border overflow-hidden", isMinimized ? "lg:justify-center px-4" : "justify-between px-6")}>
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary shrink-0">
+            <div className="h-8 w-8 rounded overflow-hidden flex items-center justify-center shrink-0">
               <img src="/paylabs-logo.png" alt="Paylabs" className="w-full h-full object-contain p-0.5" />
             </div>
-            <span>Paylabs</span>
+            <span className={cn("transition-all duration-300 whitespace-nowrap", isMinimized && "lg:hidden")}>Paylabs</span>
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <nav className="flex-1 space-y-1 px-4 py-4 overflow-y-auto">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto overflow-x-hidden hide-scrollbar">
           {navigation
             .filter((item) => user?.permissions?.includes(item.permission) || item.permission === "dashboard")
             .map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-            // Exact match for dashboard
             const isActuallyActive = item.href === "/" ? pathname === "/" : isActive;
             return (
               <Link
                 key={item.name}
                 href={item.href}
+                title={isMinimized ? item.name : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors shrink-0",
                   isActuallyActive
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  isMinimized && "lg:justify-center"
                 )}
                 onClick={() => onClose()}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
-                {item.name}
+                <span className={cn("transition-all duration-300 whitespace-nowrap", isMinimized && "lg:hidden")}>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-border p-4">
-          <div className="mb-4">
-            <select
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              onChange={(e) => {
-                const theme = e.target.value;
-                document.documentElement.className = theme;
-                localStorage.setItem("theme", theme);
-              }}
-              defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "theme-earthy" : "theme-earthy"}
-            >
-              <option value="">Default (Standard)</option>
-              <option value="theme-japandi">Japandi (Terang & Bersih)</option>
-              <option value="theme-industrial">Industrial (Gelap & Maskulin)</option>
-              <option value="theme-earthy">Earthy (Hangat & Alam)</option>
-            </select>
+        <div className="border-t border-border p-3 overflow-hidden shrink-0 flex flex-col gap-3">
+          <div className={cn("flex items-center gap-2", isMinimized ? "lg:justify-center" : "")}>
+            <div className={cn("relative flex items-center justify-center shrink-0", isMinimized ? "lg:w-full" : "w-full")}>
+              {isMinimized && (
+                <div className="hidden lg:flex w-10 h-10 rounded-md items-center justify-center bg-muted text-muted-foreground" title="Tema">
+                  <Palette className="h-5 w-5" />
+                </div>
+              )}
+              <select
+                title="Pilih Tema"
+                className={cn(
+                  "h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full",
+                  isMinimized && "lg:hidden"
+                )}
+                onChange={(e) => {
+                  const theme = e.target.value;
+                  document.documentElement.className = theme;
+                  localStorage.setItem("theme", theme);
+                }}
+                defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "theme-earthy" : "theme-earthy"}
+              >
+                <option value="">Default (Standard)</option>
+                <option value="theme-japandi">Japandi (Terang)</option>
+                <option value="theme-industrial">Industrial (Gelap)</option>
+                <option value="theme-earthy">Earthy (Alam)</option>
+              </select>
+            </div>
           </div>
 
-          <div className="mb-4 px-2">
-            <p className="text-sm font-medium text-foreground">{user?.email}</p>
-            <p className="text-xs text-muted-foreground capitalize">
+          <div className={cn("px-2 whitespace-nowrap transition-all duration-300", isMinimized && "lg:hidden")}>
+            <p className="text-sm font-medium text-foreground truncate">{user?.email}</p>
+            <p className="text-xs text-muted-foreground capitalize truncate">
               Role: {user?.appName || user?.appRole || 'Loading...'}
             </p>
           </div>
+          
           <Button
             variant="outline"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className={cn("justify-start text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0", isMinimized ? "lg:justify-center lg:px-0" : "w-full")}
             onClick={handleLogout}
+            title={isMinimized ? "Keluar" : undefined}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Keluar
+            <LogOut className={cn("h-4 w-4 shrink-0", !isMinimized && "mr-2")} />
+            <span className={cn("transition-all duration-300", isMinimized && "lg:hidden")}>Keluar</span>
           </Button>
         </div>
       </div>
