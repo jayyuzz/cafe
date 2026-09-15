@@ -33,6 +33,8 @@ export default function MenuPage() {
   const [prodPrice, setProdPrice] = useState("");
   const [prodDesc, setProdDesc] = useState("");
   const [prodAvail, setProdAvail] = useState(true);
+  const [prodTrackStock, setProdTrackStock] = useState(false);
+  const [prodCurrentStock, setProdCurrentStock] = useState("0");
 
   // Options Editor State
   const [activeOptionsProduct, setActiveOptionsProduct] = useState<any>(null);
@@ -106,6 +108,8 @@ export default function MenuPage() {
       price: Number(prodPrice),
       description: prodDesc,
       is_available: prodAvail,
+      track_stock: prodTrackStock,
+      current_stock: Number(prodCurrentStock) || 0,
       image_url: finalImageUrl || null,
       outlet_id: "00000000-0000-0000-0000-000000000001"
     };
@@ -141,10 +145,15 @@ export default function MenuPage() {
 
         <TabsContent value="produk" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Daftar Produk</h2>
+            <h2 className="text-xl font-semibold">Daftar Menu</h2>
             <Dialog open={prodOpen} onOpenChange={setProdOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => { setProdId(""); setProdName(""); setProdPrice(""); setProdDesc(""); setProdCat(""); setProdAvail(true); }}>
+                <Button onClick={() => { 
+                  setProdId(""); setProdName(""); setProdCat(""); 
+                  setProdPrice(""); setProdDesc(""); setProdAvail(true); 
+                  setProdImageUrl(""); setProdImage(null); 
+                  setProdTrackStock(false); setProdCurrentStock("0");
+                }}>
                   <Plus className="mr-2 h-4 w-4" /> Tambah Produk
                 </Button>
               </DialogTrigger>
@@ -185,6 +194,20 @@ export default function MenuPage() {
                     <Switch id="available" checked={prodAvail} onCheckedChange={setProdAvail} />
                     <label htmlFor="available" className="text-sm font-medium">Tersedia</label>
                   </div>
+                  
+                  <div className="border-t pt-4 mt-2 space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Switch id="track_stock" checked={prodTrackStock} onCheckedChange={setProdTrackStock} />
+                      <label htmlFor="track_stock" className="text-sm font-medium">Lacak Stok Barang</label>
+                    </div>
+                    {prodTrackStock && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Stok Saat Ini</label>
+                        <Input type="number" value={prodCurrentStock} onChange={(e) => setProdCurrentStock(e.target.value)} placeholder="Contoh: 50" />
+                        <p className="text-xs text-muted-foreground">Otomatis berkurang saat pesanan diproses di Kasir.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button onClick={saveProduct} disabled={isUploading}>
@@ -220,7 +243,9 @@ export default function MenuPage() {
                       <Button variant="ghost" size="icon" onClick={() => {
                         setProdId(p.id); setProdName(p.name); setProdCat(p.category_id);
                         setProdPrice(p.price.toString()); setProdDesc(p.description || "");
-                        setProdAvail(p.is_available); setProdImageUrl(p.image_url || ""); setProdImage(null); setProdOpen(true);
+                        setProdAvail(p.is_available); setProdImageUrl(p.image_url || ""); setProdImage(null);
+                        setProdTrackStock(p.track_stock || false); setProdCurrentStock((p.current_stock || 0).toString());
+                        setProdOpen(true);
                       }}>
                         <Edit className="h-4 w-4" />
                       </Button>

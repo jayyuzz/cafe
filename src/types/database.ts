@@ -63,6 +63,18 @@ export type Database = {
         Update: Partial<OrderItem>
         Relationships: []
       }
+      product_addons: {
+        Row: ProductAddon
+        Insert: Partial<ProductAddon> & Pick<ProductAddon, 'product_id' | 'name'>
+        Update: Partial<ProductAddon>
+        Relationships: []
+      }
+      stock_movements: {
+        Row: StockMovement
+        Insert: Partial<StockMovement> & Pick<StockMovement, 'product_id' | 'movement_type' | 'quantity'>
+        Update: Partial<StockMovement>
+        Relationships: []
+      }
       discounts: {
         Row: Discount
         Insert: Partial<Discount> & Pick<Discount, 'name' | 'type' | 'value' | 'outlet_id'>
@@ -147,7 +159,20 @@ export type Product = {
   price: number
   image_url: string | null
   is_available: boolean
+  track_stock: boolean
+  current_stock: number
   created_at: string
+}
+
+export type StockMovement = {
+  id: string
+  product_id: string
+  movement_type: 'in' | 'out' | 'adjustment'
+  quantity: number
+  notes: string | null
+  created_at: string
+  // Joined fields (optional)
+  product?: Product
 }
 
 export type ProductVariant = {

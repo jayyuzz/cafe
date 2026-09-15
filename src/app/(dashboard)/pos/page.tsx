@@ -188,6 +188,24 @@ export default function POSPage() {
     if (itemsError) {
       toast.error("Gagal menyimpan item pesanan");
     } else {
+      // PROSES PENGURANGAN STOK
+      const trackedItems = cart.filter(item => item.product.track_stock);
+      if (trackedItems.length > 0) {
+        for (const item of trackedItems) {
+          const newStock = (item.product.current_stock || 0) - item.quantity;
+          await supabase.from("products").update({ current_stock: newStock }).eq("id", item.product.id);
+          await supabase.from("stock_movements").insert({
+            product_id: item.product.id,
+            movement_type: "out",
+            quantity: item.quantity,
+            notes: `Penjualan Kasir: ${orderNumber}`
+          });
+        }
+        // Refetch products so stock in POS is updated
+        const { data: prods } = await supabase.from("products").select("*, product_variants(*), product_addons(*)").order("name");
+        if (prods) setProducts(prods);
+      }
+
       toast.success("Pesanan berhasil diproses");
       
       // Catat log aktivitas
