@@ -159,6 +159,15 @@ export type ProductVariant = {
   created_at: string
 }
 
+export type ProductAddon = {
+  id: string
+  product_id: string
+  name: string
+  price: number
+  is_active: boolean
+  created_at: string
+}
+
 export type Order = {
   id: string
   outlet_id: string
@@ -197,6 +206,7 @@ export type OrderItem = {
   unit_price: number
   subtotal: number
   notes: string | null
+  addons: { id: string; name: string; price: number }[]
   created_at: string
 }
 

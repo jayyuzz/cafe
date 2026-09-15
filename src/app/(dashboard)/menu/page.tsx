@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, UtensilsCrossed } from "lucide-react";
+import { Plus, Edit, Trash2, UtensilsCrossed, Settings2 } from "lucide-react";
+import { ProductOptionsEditor } from "@/components/admin/product-options-editor";
 
 export default function MenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -32,6 +33,9 @@ export default function MenuPage() {
   const [prodPrice, setProdPrice] = useState("");
   const [prodDesc, setProdDesc] = useState("");
   const [prodAvail, setProdAvail] = useState(true);
+
+  // Options Editor State
+  const [activeOptionsProduct, setActiveOptionsProduct] = useState<any>(null);
 
   const fetchData = async () => {
     const { data: c } = await supabase.from("categories").select("*").order("name");
@@ -210,6 +214,9 @@ export default function MenuPage() {
                       {p.is_available ? "Tersedia" : "Habis"}
                     </Badge>
                     <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setActiveOptionsProduct(p)} title="Atur Varian & Add-on">
+                        <Settings2 className="h-4 w-4 text-primary" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => {
                         setProdId(p.id); setProdName(p.name); setProdCat(p.category_id);
                         setProdPrice(p.price.toString()); setProdDesc(p.description || "");
@@ -226,6 +233,12 @@ export default function MenuPage() {
               </div>
             ))}
           </div>
+
+          <ProductOptionsEditor 
+            product={activeOptionsProduct} 
+            isOpen={!!activeOptionsProduct} 
+            onClose={() => setActiveOptionsProduct(null)} 
+          />
         </TabsContent>
 
         <TabsContent value="kategori" className="space-y-4">

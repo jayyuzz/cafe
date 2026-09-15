@@ -11,9 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+import { ProductModal } from "@/components/pos/product-modal";
+
 type CartItem = {
   product: Product;
   variant?: ProductVariant;
+  addons: any[];
   quantity: number;
   notes: string;
 };
@@ -34,6 +37,10 @@ export default function POSPage() {
   const [showKeypad, setShowKeypad] = useState(false);
   const [manualDiscount, setManualDiscount] = useState<number>(0);
   
+  // Product Modal State
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Mobile responsive state
   const [isCartOpenMobile, setIsCartOpenMobile] = useState(false);
   const [cetakStruk, setCetakStruk] = useState(false);
@@ -47,7 +54,7 @@ export default function POSPage() {
       const { data: cats } = await supabase.from("categories").select("*").order("name");
       if (cats) setCategories(cats);
 
-      const { data: prods } = await supabase.from("products").select("*, product_variants(*)").order("name");
+      const { data: prods } = await supabase.from("products").select("*, product_variants(*), product_addons(*)").order("name");
       if (prods) setProducts(prods);
 
       const { data: out } = await supabase.from("outlets").select("*").eq("is_active", true).limit(1).single();
@@ -62,17 +69,33 @@ export default function POSPage() {
     return matchCategory && matchSearch;
   });
 
-  const addToCart = (product: Product, variant?: ProductVariant) => {
+  const handleProductClick = (product: any) => {
+    if (!product.is_available) return;
+    if ((product.product_variants && product.product_variants.length > 0) || (product.product_addons && product.product_addons.length > 0)) {
+      setSelectedProduct(product);
+      setIsModalOpen(true);
+    } else {
+      addToCart(product, undefined, []);
+    }
+  };
+
+  const addToCart = (product: any, variant?: any, addons: any[] = []) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id && item.variant?.id === variant?.id);
+      const addonIds = addons.map(a => a.id).sort().join(',');
+      const existing = prev.find((item) => {
+        const itemAddonIds = item.addons.map(a => a.id).sort().join(',');
+        return item.product.id === product.id && item.variant?.id === variant?.id && itemAddonIds === addonIds;
+      });
       if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id && item.variant?.id === variant?.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prev.map((item) => {
+          const itemAddonIds = item.addons.map(a => a.id).sort().join(',');
+          if (item.product.id === product.id && item.variant?.id === variant?.id && itemAddonIds === addonIds) {
+            return { ...item, quantity: item.quantity + 1 };
+          }
+          return item;
+        });
       }
-      return [...prev, { product, variant, quantity: 1, notes: "" }];
+      return [...prev, { product, variant, addons, quantity: 1, notes: "" }];
     });
   };
 
@@ -93,7 +116,10 @@ export default function POSPage() {
     });
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.product.price + (item.variant?.additional_price || 0)) * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => {
+    const addonsTotal = item.addons.reduce((a, b) => a + Number(b.price), 0);
+    return sum + (item.product.price + (item.variant?.additional_price || 0) + addonsTotal) * item.quantity;
+  }, 0);
   const discount = Math.min(manualDiscount || 0, subtotal); 
   
   // Dynamic tax calculation based on outlet settings
@@ -140,17 +166,22 @@ export default function POSPage() {
       return;
     }
 
-    const orderItems = cart.map(item => ({
-      order_id: order.id,
-      product_id: item.product.id,
-      variant_id: item.variant?.id,
-      product_name: item.product.name,
-      variant_name: item.variant?.name,
-      quantity: item.quantity,
-      unit_price: item.product.price + (item.variant?.additional_price || 0),
-      subtotal: (item.product.price + (item.variant?.additional_price || 0)) * item.quantity,
-      notes: item.notes
-    }));
+    const orderItems = cart.map(item => {
+      const addonsTotal = item.addons.reduce((a, b) => a + Number(b.price), 0);
+      const unitPrice = item.product.price + (item.variant?.additional_price || 0) + addonsTotal;
+      return {
+        order_id: order.id,
+        product_id: item.product.id,
+        variant_id: item.variant?.id,
+        product_name: item.product.name,
+        variant_name: item.variant?.name,
+        quantity: item.quantity,
+        unit_price: unitPrice,
+        subtotal: unitPrice * item.quantity,
+        notes: item.notes,
+        addons: item.addons
+      };
+    });
 
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
@@ -226,7 +257,7 @@ export default function POSPage() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                onClick={() => product.is_available && addToCart(product)}
+                onClick={() => handleProductClick(product)}
                 className={cn(
                   "border rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md bg-card",
                   !product.is_available && "opacity-50 cursor-not-allowed grayscale"
@@ -306,14 +337,20 @@ export default function POSPage() {
 
         <div className="overflow-y-auto p-3 space-y-2 h-[260px] shrink-0 hide-scrollbar bg-background/30">
           {cart.map((item, index) => {
-            const itemPrice = item.product.price + (item.variant?.additional_price || 0);
+            const addonsTotal = item.addons.reduce((a, b) => a + Number(b.price), 0);
+            const itemPrice = item.product.price + (item.variant?.additional_price || 0) + addonsTotal;
             return (
-              <div key={`${item.product.id}-${item.variant?.id}-${index}`} className="flex items-center gap-2 p-2 bg-background rounded-md border shadow-sm">
-                <div className="flex-1 min-w-0 flex items-center">
+              <div key={`${item.product.id}-${item.variant?.id}-${item.addons.map(a => a.id).join('-')}-${index}`} className="flex items-center gap-2 p-2 bg-background rounded-md border shadow-sm">
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <h4 className="font-semibold text-xs truncate" title={item.product.name}>
                     {item.product.name}
                     {item.variant && <span className="font-normal text-muted-foreground ml-1">({item.variant.name})</span>}
                   </h4>
+                  {item.addons && item.addons.length > 0 && (
+                    <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight truncate">
+                      + {item.addons.map(a => a.name).join(', ')}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="text-xs font-bold text-primary shrink-0 mr-2">
@@ -504,6 +541,16 @@ export default function POSPage() {
           )}
         </Button>
       </div>
+
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onAddToCart={addToCart}
+      />
     </div>
   );
 }
