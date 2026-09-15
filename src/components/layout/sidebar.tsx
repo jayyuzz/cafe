@@ -20,6 +20,7 @@ import {
   Archive,
   Combine,
   Users,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const navigation = [
   { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
   { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
   { name: "Pelanggan & Poin", href: "/pelanggan", icon: Users, permission: "pos" },
+  { name: "Catat Waste", href: "/waste", icon: Trash2, permission: "menu" },
   { name: "Laporan", href: "/laporan", icon: BarChart3, permission: "laporan" },
   { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
   { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },

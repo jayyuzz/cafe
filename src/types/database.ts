@@ -69,6 +69,12 @@ export type Database = {
         Update: Partial<Customer>
         Relationships: []
       }
+      waste_logs: {
+        Row: WasteLog
+        Insert: Partial<WasteLog> & Pick<WasteLog, 'item_type' | 'item_id' | 'item_name' | 'quantity' | 'cost_per_unit' | 'total_loss' | 'reason' | 'outlet_id'>
+        Update: Partial<WasteLog>
+        Relationships: []
+      }
       raw_materials: {
         Row: RawMaterial
         Insert: Partial<RawMaterial> & Pick<RawMaterial, 'name' | 'unit' | 'outlet_id'>
@@ -196,6 +202,20 @@ export type Customer = {
   phone: string | null
   points: number
   total_spent: number
+  created_at: string
+}
+
+export type WasteLog = {
+  id: string
+  outlet_id: string
+  item_type: 'product' | 'material'
+  item_id: string
+  item_name: string
+  quantity: number
+  cost_per_unit: number
+  total_loss: number
+  reason: string
+  notes: string | null
   created_at: string
 }
 
