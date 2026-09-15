@@ -275,6 +275,7 @@ export type Order = {
   order_number: string
   customer_id: string | null
   customer_name: string | null
+  customer_phone: string | null
   cashier_id: string | null
   driver_id: string | null
   order_type: 'dine_in' | 'take_away' | 'delivery'

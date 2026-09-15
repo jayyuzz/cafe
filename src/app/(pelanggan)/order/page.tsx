@@ -145,6 +145,7 @@ function OrderPageContent() {
     tableParam ? parseInt(tableParam) : null
   );
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
@@ -286,6 +287,11 @@ function OrderPageContent() {
       return;
     }
 
+    if (orderType === "delivery" && !customerPhone.trim()) {
+      toast.error("Nomor WhatsApp harus diisi untuk pengiriman");
+      return;
+    }
+
     setIsSubmitting(true);
     const orderNumber = `MVE-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(Math.random() * 9000 + 1000)}`;
 
@@ -293,6 +299,7 @@ function OrderPageContent() {
       outlet_id: outlet.id,
       order_number: orderNumber,
       customer_name: customerName.trim() || "Tamu",
+      customer_phone: customerPhone.trim() || null,
       order_type: orderType,
       table_number: orderType === "dine_in" ? tableNumber : null,
       status: "pending",
@@ -354,7 +361,7 @@ function OrderPageContent() {
     && (
       (orderType === "dine_in" && tableNumber !== null) ||
       (orderType === "take_away") ||
-      (orderType === "delivery" && notes.trim().length > 0)
+      (orderType === "delivery" && notes.trim().length > 0 && customerPhone.trim().length > 0)
     );
 
   /* ── Loading ────────────────────────────────────────────────────────────── */
@@ -857,6 +864,20 @@ function OrderPageContent() {
                   placeholder="Nama kamu..."
                   value={customerName}
                   onChange={e => setCustomerName(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border-2 border-border bg-muted/30 text-sm focus:outline-none focus:border-amber-900/50"
+                />
+              </div>
+
+              {/* 🍔 Customer phone 🍔 */}
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  Nomor WhatsApp {orderType === "delivery" && <span className="text-red-500">*</span>}
+                </p>
+                <input
+                  type="tel"
+                  placeholder="0812xxxx (opsional untuk Bawa Pulang)"
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
                   className="w-full h-10 px-4 rounded-xl border-2 border-border bg-muted/30 text-sm focus:outline-none focus:border-amber-900/50"
                 />
               </div>

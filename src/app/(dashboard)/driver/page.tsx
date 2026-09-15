@@ -122,6 +122,11 @@ export default function DriverDashboardPage() {
                   <div>
                     <div className="font-mono text-sm font-semibold text-muted-foreground">{order.order_number}</div>
                     <div className="font-bold text-lg">{order.customer_name || 'Pelanggan'}</div>
+                    {order.customer_phone && (
+                      <div className="text-sm font-medium text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3" /> {order.customer_phone}
+                      </div>
+                    )}
                   </div>
                   <Badge className={
                     order.status === 'ready' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-teal-500 hover:bg-teal-600'
@@ -150,6 +155,16 @@ export default function DriverDashboardPage() {
                   </div>
 
                   <div className="pt-2 flex gap-2">
+                    {order.customer_phone && (
+                      <Button 
+                        variant="outline"
+                        size="icon"
+                        className="border-green-200 text-green-700 hover:bg-green-50 shrink-0"
+                        onClick={() => window.open(`https://wa.me/${order.customer_phone?.replace(/^0/, '62').replace(/\D/g, '')}`, '_blank')}
+                      >
+                        <Phone className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       className="flex-1 border-teal-200 text-teal-700 hover:bg-teal-50"
@@ -163,14 +178,14 @@ export default function DriverDashboardPage() {
                         className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
                         onClick={() => handleUpdateStatus(order.id, 'delivering')}
                       >
-                        Ambil Pesanan
+                        Ambil
                       </Button>
                     ) : (
                       <Button 
                         className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
                         onClick={() => handleUpdateStatus(order.id, 'delivered')}
                       >
-                        <CheckCircle2 className="w-4 h-4 mr-2" /> Selesai Antar
+                        <CheckCircle2 className="w-4 h-4 mr-2" /> Selesai
                       </Button>
                     )}
                   </div>
