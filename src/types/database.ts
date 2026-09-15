@@ -63,6 +63,12 @@ export type Database = {
         Update: Partial<OrderItem>
         Relationships: []
       }
+      shifts: {
+        Row: Shift
+        Insert: Partial<Shift> & Pick<Shift, 'outlet_id' | 'cashier_name' | 'starting_cash'>
+        Update: Partial<Shift>
+        Relationships: []
+      }
       product_addons: {
         Row: ProductAddon
         Insert: Partial<ProductAddon> & Pick<ProductAddon, 'product_id' | 'name'>
@@ -196,6 +202,7 @@ export type ProductAddon = {
 export type Order = {
   id: string
   outlet_id: string
+  shift_id: string | null
   order_number: string
   customer_id: string | null
   customer_name: string | null
@@ -218,6 +225,20 @@ export type Order = {
   updated_at: string
   // Joined fields (optional)
   order_items?: OrderItem[]
+}
+
+export type Shift = {
+  id: string
+  outlet_id: string
+  cashier_name: string
+  start_time: string
+  end_time: string | null
+  starting_cash: number
+  expected_ending_cash: number | null
+  actual_ending_cash: number | null
+  status: 'open' | 'closed'
+  notes: string | null
+  created_at: string
 }
 
 export type OrderItem = {

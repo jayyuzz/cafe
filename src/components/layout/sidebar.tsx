@@ -40,6 +40,7 @@ interface SidebarProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
   { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
+  { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
   { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
   { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },

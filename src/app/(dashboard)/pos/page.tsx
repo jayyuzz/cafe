@@ -46,6 +46,7 @@ export default function POSPage() {
   const [cetakStruk, setCetakStruk] = useState(false);
 
   const [outlet, setOutlet] = useState<any>(null);
+  const [activeShift, setActiveShift] = useState<any>(null);
 
   const supabase = createClient();
 
@@ -59,6 +60,9 @@ export default function POSPage() {
 
       const { data: out } = await supabase.from("outlets").select("*").eq("is_active", true).limit(1).single();
       if (out) setOutlet(out);
+
+      const { data: shifts } = await supabase.from("shifts").select("*").eq("status", "open").limit(1).single();
+      setActiveShift(shifts || null);
     }
     fetchData();
   }, [supabase]);
@@ -134,6 +138,10 @@ export default function POSPage() {
 
   const handleProcessOrder = async () => {
     if (cart.length === 0) return;
+    if (!activeShift) {
+      toast.error("Tidak ada kasir yang terbuka. Silakan Buka Kasir terlebih dahulu.");
+      return;
+    }
     if (paymentMethod === "cash" && amountReceived < total) {
       toast.error("Uang tidak cukup");
       return;
@@ -144,6 +152,7 @@ export default function POSPage() {
 
     const { data: order, error: orderError } = await supabase.from("orders").insert({
       outlet_id: cart[0].product.outlet_id,
+      shift_id: activeShift.id,
       order_number: orderNumber,
       customer_name: customerName || "Tamu",
       order_type: orderType,
@@ -232,6 +241,12 @@ export default function POSPage() {
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden relative">
       {/* Left Panel */}
       <div className={cn("flex-1 flex-col p-4 border-r border-border overflow-hidden", isCartOpenMobile ? "hidden lg:flex" : "flex")}>
+        {!activeShift && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 flex items-center justify-between">
+            <p className="text-sm font-medium">⚠️ Anda belum membuka shift kasir. Silakan Buka Kasir terlebih dahulu.</p>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/shift'} className="border-red-200 text-red-600 hover:bg-red-100">Buka Kasir</Button>
+          </div>
+        )}
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -532,10 +547,10 @@ export default function POSPage() {
 
           <Button 
             className="w-full py-6 text-lg"
-            disabled={cart.length === 0 || isProcessing || (paymentMethod === "cash" && amountReceived < total)}
+            disabled={!activeShift || cart.length === 0 || isProcessing || (paymentMethod === "cash" && amountReceived < total)}
             onClick={handleProcessOrder}
           >
-            {isProcessing ? "Memproses..." : "Proses Pesanan"}
+            {!activeShift ? "Buka Kasir Dulu" : isProcessing ? "Memproses..." : "Proses Pesanan"}
           </Button>
         </div>
       </div>
