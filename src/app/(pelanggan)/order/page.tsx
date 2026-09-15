@@ -139,7 +139,7 @@ function OrderPageContent() {
   const [showVariantPicker, setShowVariantPicker] = useState<Product | null>(null);
 
   const [orderType, setOrderType] = useState<"dine_in" | "take_away" | "delivery">(
-    (tableParam ? "dine_in" : "take_away") as "dine_in" | "take_away" | "delivery"
+    (tableParam ? "dine_in" : "delivery") as "dine_in" | "take_away" | "delivery"
   );
   const [tableNumber, setTableNumber] = useState<number | null>(
     tableParam ? parseInt(tableParam) : null
@@ -397,6 +397,11 @@ function OrderPageContent() {
                   <>
                     <Bike className="h-3 w-3 text-blue-600" />
                     <span className="text-xs text-blue-600 font-semibold">Bawa Pulang</span>
+                  </>
+                ) : orderType === "delivery" ? (
+                  <>
+                    <Navigation className="h-3 w-3 text-teal-600" />
+                    <span className="text-xs text-teal-600 font-semibold">Delivery Order</span>
                   </>
                 ) : (
                   <span className="text-xs text-muted-foreground">Pilih tipe di keranjang</span>
@@ -731,34 +736,50 @@ function OrderPageContent() {
               {/* 🍔 Order type 🍔 */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Tipe Pesanan</p>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => { setOrderType("dine_in"); if (tableParam) setTableNumber(parseInt(tableParam)); }}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
-                      orderType === "dine_in" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
-                    )}
-                  >
-                    <MapPin className="h-4 w-4" /> Makan Sini
-                  </button>
-                  <button
-                    onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
-                      orderType === "take_away" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
-                    )}
-                  >
-                    <Bike className="h-4 w-4" /> Bawa Pulang
-                  </button>
-                  <button
-                    onClick={() => { setOrderType("delivery"); setTableNumber(null); }}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
-                      orderType === "delivery" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
-                    )}
-                  >
-                    <Navigation className="h-4 w-4" /> Pesan Antar
-                  </button>
+                <div className={cn("grid gap-2", tableParam ? "grid-cols-2" : "grid-cols-2")}>
+                  {tableParam ? (
+                    <>
+                      <button
+                        onClick={() => { setOrderType("dine_in"); if (tableParam) setTableNumber(parseInt(tableParam)); }}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
+                          orderType === "dine_in" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
+                        )}
+                      >
+                        <MapPin className="h-4 w-4" /> Makan Sini
+                      </button>
+                      <button
+                        onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
+                          orderType === "take_away" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
+                        )}
+                      >
+                        <Bike className="h-4 w-4" /> Bawa Pulang
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => { setOrderType("delivery"); setTableNumber(null); }}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
+                          orderType === "delivery" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
+                        )}
+                      >
+                        <Navigation className="h-4 w-4" /> Delivery Order
+                      </button>
+                      <button
+                        onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
+                          orderType === "take_away" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
+                        )}
+                      >
+                        <Bike className="h-4 w-4" /> Bawa Pulang
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
