@@ -736,7 +736,7 @@ function OrderPageContent() {
               {/* 🍔 Order type 🍔 */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Tipe Pesanan</p>
-                <div className={cn("grid gap-2", tableParam ? "grid-cols-2" : "grid-cols-2")}>
+                <div className={cn("grid gap-2", tableParam ? "grid-cols-2" : "grid-cols-1")}>
                   {tableParam ? (
                     <>
                       <button
@@ -759,26 +759,11 @@ function OrderPageContent() {
                       </button>
                     </>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => { setOrderType("delivery"); setTableNumber(null); }}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
-                          orderType === "delivery" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
-                        )}
-                      >
-                        <Navigation className="h-4 w-4" /> Delivery Order
-                      </button>
-                      <button
-                        onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
-                          orderType === "take_away" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
-                        )}
-                      >
-                        <Bike className="h-4 w-4" /> Bawa Pulang
-                      </button>
-                    </>
+                    <button
+                      className="flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 border-amber-900 bg-amber-900 text-amber-50 transition-all cursor-default"
+                    >
+                      <Navigation className="h-4 w-4" /> Delivery Order
+                    </button>
                   )}
                 </div>
               </div>
