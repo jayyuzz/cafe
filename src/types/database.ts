@@ -63,6 +63,18 @@ export type Database = {
         Update: Partial<OrderItem>
         Relationships: []
       }
+      raw_materials: {
+        Row: RawMaterial
+        Insert: Partial<RawMaterial> & Pick<RawMaterial, 'name' | 'unit' | 'outlet_id'>
+        Update: Partial<RawMaterial>
+        Relationships: []
+      }
+      product_recipes: {
+        Row: ProductRecipe
+        Insert: Partial<ProductRecipe> & Pick<ProductRecipe, 'product_id' | 'material_id' | 'quantity'>
+        Update: Partial<ProductRecipe>
+        Relationships: []
+      }
       shifts: {
         Row: Shift
         Insert: Partial<Shift> & Pick<Shift, 'outlet_id' | 'cashier_name' | 'starting_cash'>
@@ -167,7 +179,28 @@ export type Product = {
   is_available: boolean
   track_stock: boolean
   current_stock: number
+  cogs: number
   created_at: string
+}
+
+export type RawMaterial = {
+  id: string
+  outlet_id: string
+  name: string
+  unit: string
+  cost_per_unit: number
+  current_stock: number
+  created_at: string
+}
+
+export type ProductRecipe = {
+  id: string
+  product_id: string
+  material_id: string
+  quantity: number
+  created_at: string
+  // Joined fields
+  raw_material?: RawMaterial
 }
 
 export type StockMovement = {

@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, UtensilsCrossed, Settings2 } from "lucide-react";
 import { ProductOptionsEditor } from "@/components/admin/product-options-editor";
+import { ProductRecipeEditor } from "@/components/admin/product-recipe-editor";
+import { Combine } from "lucide-react";
 
 export default function MenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -38,6 +40,9 @@ export default function MenuPage() {
 
   // Options Editor State
   const [activeOptionsProduct, setActiveOptionsProduct] = useState<any>(null);
+  
+  // Recipe Editor State
+  const [activeRecipeProduct, setActiveRecipeProduct] = useState<any>(null);
 
   const fetchData = async () => {
     const { data: c } = await supabase.from("categories").select("*").order("name");
@@ -237,6 +242,9 @@ export default function MenuPage() {
                       {p.is_available ? "Tersedia" : "Habis"}
                     </Badge>
                     <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setActiveRecipeProduct(p)} title="Atur Resep & HPP">
+                        <Combine className="h-4 w-4 text-emerald-600" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => setActiveOptionsProduct(p)} title="Atur Varian & Add-on">
                         <Settings2 className="h-4 w-4 text-primary" />
                       </Button>
@@ -263,6 +271,11 @@ export default function MenuPage() {
             product={activeOptionsProduct} 
             isOpen={!!activeOptionsProduct} 
             onClose={() => setActiveOptionsProduct(null)} 
+          />
+          <ProductRecipeEditor 
+            product={activeRecipeProduct} 
+            isOpen={!!activeRecipeProduct} 
+            onClose={() => { setActiveRecipeProduct(null); fetchData(); }} 
           />
         </TabsContent>
 

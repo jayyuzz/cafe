@@ -18,6 +18,7 @@ import {
   QrCode,
   Palette,
   Archive,
+  Combine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ const navigation = [
   { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
   { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
+  { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
   { name: "Laporan", href: "/laporan", icon: BarChart3, permission: "laporan" },
   { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
   { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
