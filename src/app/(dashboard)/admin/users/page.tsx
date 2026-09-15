@@ -24,7 +24,7 @@ export default function UsersManagementPage() {
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"super_admin" | "admin" | "cashier" | "chef" | "customer">("cashier");
+  const [role, setRole] = useState<"super_admin" | "admin" | "cashier" | "chef" | "driver" | "customer">("cashier");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchUsers = async () => {
@@ -93,7 +93,7 @@ export default function UsersManagementPage() {
 
     if (isEditing) {
       const { error } = await supabase.from("users").update(payload).eq("id", editingId);
-      if (error) toast.error("Gagal memperbarui user");
+      if (error) toast.error(`Gagal memperbarui user: ${error.message}`);
       else toast.success("User berhasil diperbarui");
     } else {
       // In a real app, this should call an Edge Function to create Auth user too.
@@ -103,8 +103,12 @@ export default function UsersManagementPage() {
         id: crypto.randomUUID()
       };
       const { error } = await supabase.from("users").insert(payloadWithId);
-      if (error) toast.error("Gagal menambah user. Email mungkin sudah ada.");
-      else toast.success("User berhasil ditambahkan");
+      if (error) {
+        toast.error(`Gagal menambah user: ${error.message}`);
+        console.error("Insert user error:", error);
+      } else {
+        toast.success("User berhasil ditambahkan");
+      }
     }
 
     if (!isSubmitting) {
