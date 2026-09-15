@@ -103,6 +103,8 @@ export type Outlet = {
   logo_url: string | null
   tax_enabled: boolean
   tax_percentage: number
+  service_charge_enabled: boolean
+  service_charge_percentage: number
   total_tables: number
   is_active: boolean
   created_at: string
@@ -164,7 +166,7 @@ export type Order = {
   customer_id: string | null
   customer_name: string | null
   cashier_id: string | null
-  order_type: 'dine_in' | 'take_away'
+  order_type: 'dine_in' | 'take_away' | 'delivery'
   table_number: number | null
   status: 'pending' | 'processing' | 'ready' | 'completed' | 'cancelled'
   subtotal: number
@@ -172,8 +174,9 @@ export type Order = {
   discount_label: string | null
   tax_percentage: number
   tax_amount: number
+  service_charge_amount: number
   total: number
-  payment_method: 'cash' | 'qris' | null
+  payment_method: 'cash' | 'qris' | 'transfer' | null
   cash_received: number | null
   change_amount: number | null
   notes: string | null

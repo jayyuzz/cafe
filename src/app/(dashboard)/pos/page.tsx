@@ -25,13 +25,14 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState("");
   
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [orderType, setOrderType] = useState<"dine_in" | "take_away">("dine_in");
+  const [orderType, setOrderType] = useState<"dine_in" | "take_away" | "delivery">("dine_in");
   const [tableNumber, setTableNumber] = useState<number | null>(null);
   const [customerName, setCustomerName] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qris">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qris" | "transfer">("cash");
   const [amountReceived, setAmountReceived] = useState<number>(0);
   const [showKeypad, setShowKeypad] = useState(false);
+  const [manualDiscount, setManualDiscount] = useState<number>(0);
   
   // Mobile responsive state
   const [isCartOpenMobile, setIsCartOpenMobile] = useState(false);
@@ -93,13 +94,17 @@ export default function POSPage() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price + (item.variant?.additional_price || 0)) * item.quantity, 0);
-  const discount = 0; // TBD feature
+  const discount = Math.min(manualDiscount || 0, subtotal); 
   
   // Dynamic tax calculation based on outlet settings
   const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
   const tax = (subtotal - discount) * (taxPercentage / 100);
+
+  // Dynamic service charge calculation
+  const serviceChargePercentage = outlet?.service_charge_enabled ? (outlet?.service_charge_percentage || 0) : 0;
+  const serviceChargeAmount = (subtotal - discount) * (serviceChargePercentage / 100);
   
-  const total = subtotal - discount + tax;
+  const total = subtotal - discount + tax + serviceChargeAmount;
 
   const handleProcessOrder = async () => {
     if (cart.length === 0) return;
@@ -121,6 +126,7 @@ export default function POSPage() {
       subtotal,
       tax_amount: tax,
       tax_percentage: taxPercentage,
+      service_charge_amount: serviceChargeAmount,
       discount_amount: discount,
       total: total,
       payment_method: paymentMethod,
@@ -256,17 +262,24 @@ export default function POSPage() {
           <div className="flex gap-2 mb-3">
             <Button 
               variant={orderType === "dine_in" ? "default" : "outline"} 
-              className="flex-1 text-xs h-8"
+              className="flex-1 text-[10px] sm:text-xs h-8 px-1"
               onClick={() => setOrderType("dine_in")}
             >
-              Makan Sini
+              Dine In
             </Button>
             <Button 
               variant={orderType === "take_away" ? "default" : "outline"} 
-              className="flex-1 text-xs h-8"
+              className="flex-1 text-[10px] sm:text-xs h-8 px-1"
               onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
             >
-              Bawa Pulang
+              Takeaway
+            </Button>
+            <Button 
+              variant={orderType === "delivery" ? "default" : "outline"} 
+              className="flex-1 text-[10px] sm:text-xs h-8 px-1"
+              onClick={() => { setOrderType("delivery"); setTableNumber(null); }}
+            >
+              Delivery
             </Button>
           </div>
 
@@ -346,7 +359,19 @@ export default function POSPage() {
         <div className="p-4 border-t border-border space-y-3 shrink-0 mt-auto bg-background/50">
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatRupiah(subtotal)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Diskon</span><span>-{formatRupiah(discount)}</span></div>
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-muted-foreground">Diskon (Rp)</span>
+              <Input 
+                type="number" 
+                className="h-6 w-24 text-right text-xs" 
+                placeholder="0"
+                value={manualDiscount || ""}
+                onChange={(e) => setManualDiscount(Number(e.target.value))}
+              />
+            </div>
+            {outlet?.service_charge_enabled && (
+              <div className="flex justify-between"><span className="text-muted-foreground">Service ({outlet.service_charge_percentage}%)</span><span>{formatRupiah(serviceChargeAmount)}</span></div>
+            )}
             {outlet?.tax_enabled && (
               <div className="flex justify-between"><span className="text-muted-foreground">PB1 ({taxPercentage}%)</span><span>{formatRupiah(tax)}</span></div>
             )}
@@ -356,17 +381,24 @@ export default function POSPage() {
           <div className="flex gap-2">
             <Button
               variant={paymentMethod === "cash" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 text-[10px] sm:text-xs px-1"
               onClick={() => setPaymentMethod("cash")}
             >
               Tunai
             </Button>
             <Button
               variant={paymentMethod === "qris" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 text-[10px] sm:text-xs px-1"
               onClick={() => { setPaymentMethod("qris"); setAmountReceived(total); }}
             >
               QRIS
+            </Button>
+            <Button
+              variant={paymentMethod === "transfer" ? "default" : "outline"}
+              className="flex-1 text-[10px] sm:text-xs px-1"
+              onClick={() => { setPaymentMethod("transfer"); setAmountReceived(total); }}
+            >
+              Transfer
             </Button>
           </div>
 
