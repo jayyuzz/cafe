@@ -288,7 +288,7 @@ export type Order = {
   tax_amount: number
   service_charge_amount: number
   total: number
-  payment_method: 'cash' | 'qris' | 'transfer' | null
+  payment_method: 'cash' | 'qris' | 'transfer' | 'dana' | null
   cash_received: number | null
   change_amount: number | null
   notes: string | null

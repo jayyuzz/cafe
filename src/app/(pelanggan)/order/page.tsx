@@ -10,7 +10,7 @@ import {
   ShoppingCart, Search, UtensilsCrossed, Plus, Minus, Trash2,
   X, Coffee, CupSoda, Utensils, Cookie, Cake, LayoutGrid,
   ChevronDown, MapPin, Bike, MessageSquare, ChevronRight,
-  Star, QrCode, Banknote, CheckCircle2, Navigation,
+  Star, QrCode, Banknote, CheckCircle2, Navigation, CreditCard, Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,7 +21,7 @@ type CartItem = {
   quantity: number;
   notes: string;
 };
-type PaymentMethod = "qris" | "cash" | null;
+type PaymentMethod = "qris" | "cash" | "transfer" | "dana" | null;
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function getCategoryIcon(name: string) {
@@ -55,17 +55,33 @@ function ProductSkeleton() {
 function PaymentMethodPicker({
   value,
   onChange,
+  orderType,
 }: {
   value: PaymentMethod;
   onChange: (v: PaymentMethod) => void;
+  orderType: "dine_in" | "take_away" | "delivery";
 }) {
-  const options: { id: PaymentMethod; label: string; desc: string; icon: React.ReactNode; color: string }[] = [
+  const allOptions: { id: PaymentMethod; label: string; desc: string; icon: React.ReactNode; color: string }[] = [
     {
       id: "qris",
       label: "QRIS",
-      desc: "Scan QR Code — GoPay, OVO, Dana, dll.",
+      desc: "Scan QR Code — GoPay, OVO, ShopeePay, dll.",
       icon: <QrCode className="h-5 w-5" />,
       color: "from-violet-600 to-purple-700",
+    },
+    {
+      id: "dana",
+      label: "DANA",
+      desc: "Pembayaran e-wallet DANA",
+      icon: <Wallet className="h-5 w-5" />,
+      color: "from-blue-500 to-blue-700",
+    },
+    {
+      id: "transfer",
+      label: "Bank Transfer",
+      desc: "Transfer ke rekening BCA/Mandiri",
+      icon: <CreditCard className="h-5 w-5" />,
+      color: "from-slate-600 to-slate-800",
     },
     {
       id: "cash",
@@ -75,6 +91,12 @@ function PaymentMethodPicker({
       color: "from-amber-700 to-amber-900",
     },
   ];
+
+  // Filter out "cash" if orderType is delivery
+  const options = allOptions.filter(opt => {
+    if (orderType === "delivery" && opt.id === "cash") return false;
+    return true;
+  });
 
   return (
     <div className="space-y-2">
@@ -887,7 +909,7 @@ function OrderPageContent() {
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
                   Metode Pembayaran
                 </p>
-                <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+                <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} orderType={orderType} />
               </div>
 
               {/* ── Summary ── */}
