@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Outlet } from "@/types/database";
 import { MAX_TABLES } from "@/lib/constants";
-import { QrCode, Download, Printer, Coffee } from "lucide-react";
+import { QrCode, Download, Printer, Coffee, Share2, Copy } from "lucide-react";
 import QRCode from "qrcode";
+import { toast } from "sonner";
 
 export default function QRMejaPage() {
   const [outlet, setOutlet] = useState<Outlet | null>(null);
@@ -207,6 +208,38 @@ export default function QRMejaPage() {
               <p className="text-xs text-muted-foreground">Tap QR untuk memesan</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Remote Ordering Link Section */}
+      <div className="bg-card border border-border rounded-2xl p-6">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="space-y-1 max-w-xl">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-primary" /> Link Pesan Antar / Bawa Pulang
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Gunakan link ini untuk pelanggan di luar kafe. Anda dapat menaruhnya di Bio Instagram, Linktree, atau Katalog WhatsApp Business.
+            </p>
+          </div>
+          
+          {outlet && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="bg-muted/50 border border-border rounded-xl px-4 py-2 flex items-center overflow-hidden flex-1 md:w-[300px]">
+                <span className="text-sm font-mono truncate">{baseUrl}/order?outlet={outlet.id}</span>
+              </div>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`${baseUrl}/order?outlet=${outlet.id}`);
+                  toast.success("Link pemesanan berhasil disalin!");
+                }}
+                className="h-10 px-4 bg-primary text-primary-foreground font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors shrink-0 flex items-center justify-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Salin Link
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
