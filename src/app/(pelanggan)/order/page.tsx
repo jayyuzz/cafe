@@ -146,6 +146,7 @@ function OrderPageContent() {
   );
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -240,6 +241,34 @@ function OrderPageContent() {
   const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
   const tax = subtotal * (taxPercentage / 100);
   const total = subtotal + tax;
+
+  /* ── Location ──────────────────────────────────────────────────────────── */
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Browser Anda tidak mendukung fitur lokasi");
+      return;
+    }
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setNotes((prev) => {
+          const newNotes = prev.trim()
+            ? `${prev}\n\nLokasi Maps: ${mapsLink}`
+            : `Lokasi Maps: ${mapsLink}\nDetail Patokan: `;
+          return newNotes;
+        });
+        toast.success("Lokasi berhasil didapatkan!");
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        toast.error("Gagal mendapatkan lokasi. Pastikan izin lokasi (GPS) aktif.");
+        setIsGettingLocation(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   /* ── Submit ────────────────────────────────────────────────────────────── */
   const handleSubmitOrder = async () => {
@@ -791,14 +820,28 @@ function OrderPageContent() {
               {/* 🍔 Address input 🍔 */}
               {orderType === "delivery" && (
                 <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
-                    Alamat Pengiriman <span className="text-red-500">*</span>
-                  </p>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                      Alamat Pengiriman <span className="text-red-500">*</span>
+                    </p>
+                    <button
+                      onClick={handleGetLocation}
+                      disabled={isGettingLocation}
+                      className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-700 px-2.5 py-1 rounded-md hover:bg-teal-100 transition-colors disabled:opacity-50"
+                    >
+                      {isGettingLocation ? (
+                        <span className="h-3 w-3 rounded-full border-2 border-teal-700/30 border-t-teal-700 animate-spin" />
+                      ) : (
+                        <MapPin className="h-3 w-3" />
+                      )}
+                      {isGettingLocation ? "Mencari..." : "Lokasi Saat Ini"}
+                    </button>
+                  </div>
                   <textarea
                     placeholder="Masukkan alamat lengkap pengiriman..."
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
-                    rows={3}
+                    rows={4}
                     className="w-full p-4 rounded-xl border-2 border-border bg-muted/30 text-sm focus:outline-none focus:border-amber-900/50 resize-none"
                   />
                 </div>
