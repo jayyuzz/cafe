@@ -21,6 +21,7 @@ import {
   Combine,
   Users,
   Trash2,
+  ChefHat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ interface SidebarProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
   { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
+  { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
   { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
   { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },

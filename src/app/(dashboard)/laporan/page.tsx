@@ -1,280 +1,266 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatRupiah, formatDate, cn } from "@/lib/utils";
-import { Order } from "@/types/database";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { DollarSign, Receipt, CreditCard, Banknote, UtensilsCrossed, Trophy } from "lucide-react";
+import { formatRupiah, formatDate } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from "recharts";
+import { Trophy, TrendingUp, Receipt, Banknote, Star, User, Target, Crown, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-export default function LaporanPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+export default function LaporanLanjutPage() {
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [matrixData, setMatrixData] = useState<any[]>([]);
+  const [staffData, setStaffData] = useState<any[]>([]);
   const supabase = createClient();
 
   useEffect(() => {
-    // Set default to last 30 days
-    const today = new Date();
-    const past = new Date();
-    past.setDate(today.getDate() - 30);
-    setFromDate(past.toISOString().split("T")[0]);
-    setToDate(today.toISOString().split("T")[0]);
-  }, []);
-
-  useEffect(() => {
-    if (!fromDate || !toDate) return;
-    
-    const fetchOrders = async () => {
-      const { data } = await supabase
+    async function fetchData() {
+      // Fetch 30 days data for basic stats
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data: orders } = await supabase
         .from("orders")
-        .select("*, order_items(quantity, product:products(name, image_url))")
-        .gte("created_at", `${fromDate}T00:00:00`)
-        .lte("created_at", `${toDate}T23:59:59`)
-        .eq("status", "completed");
-        
-      if (data) setOrders(data);
-    };
+        .select("*, shifts(cashier_name)")
+        .gte("created_at", thirtyDaysAgo.toISOString())
+        .neq("status", "cancelled");
 
-    fetchOrders();
-  }, [fromDate, toDate, supabase]);
+      const { data: orderItems } = await supabase
+        .from("order_items")
+        .select(`*, orders!inner(created_at, status), products(cogs, name)`)
+        .gte("orders.created_at", thirtyDaysAgo.toISOString())
+        .neq("orders.status", "cancelled");
 
-  const totalPendapatan = orders.reduce((sum, o) => sum + o.total, 0);
-  const totalTransaksi = orders.length;
-  const rataRata = totalTransaksi ? totalPendapatan / totalTransaksi : 0;
-  
-  const cashCount = orders.filter(o => o.payment_method === "cash").length;
-  const qrisCount = orders.filter(o => o.payment_method === "qris").length;
+      if (orders) {
+        // Staff Performance (Cashier/Shift analysis)
+        const staffMap: Record<string, { revenue: number, count: number, name: string }> = {};
+        orders.forEach(o => {
+          // If shift is linked, use cashier name. Otherwise use "Unknown"
+          const cashierName = (o.shifts as any)?.cashier_name || "Kasir Utama";
+          if (!staffMap[cashierName]) staffMap[cashierName] = { revenue: 0, count: 0, name: cashierName };
+          staffMap[cashierName].revenue += o.total;
+          staffMap[cashierName].count += 1;
+        });
 
-  // Prepare line chart data (daily sales grouped by Senin-Minggu)
-  const daysOfWeek = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
-  const dayNames: Record<number, string> = {
-    1: "Senin", 2: "Selasa", 3: "Rabu", 4: "Kamis", 5: "Jumat", 6: "Sabtu", 0: "Minggu"
-  };
+        const staffArr = Object.values(staffMap).map(s => ({
+          ...s,
+          atv: s.revenue / s.count
+        })).sort((a, b) => b.revenue - a.revenue);
+        setStaffData(staffArr);
 
-  const salesMap = daysOfWeek.reduce((acc, day) => {
-    acc[day] = 0;
-    return acc;
-  }, {} as Record<string, number>);
+        // Basic Sales Trend (Last 7 days)
+        const last7Days = Array.from({ length: 7 }).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          return { date: d.toISOString().split("T")[0], name: d.toLocaleDateString("id-ID", { weekday: "short" }), total: 0 };
+        }).reverse();
 
-  orders.forEach((order) => {
-    const d = new Date(order.created_at);
-    const dayName = dayNames[d.getDay()];
-    if (dayName) {
-      salesMap[dayName] += order.total;
-    }
-  });
-  
-  const lineData = daysOfWeek.map(day => ({
-    date: day,
-    total: salesMap[day]
-  }));
-
-  // Prepare top products data
-  const productsMap = orders.reduce((acc, order: any) => {
-    order.order_items?.forEach((item: any) => {
-      if (item.product) {
-        const id = item.product.name; // Use name as unique key for grouping
-        if (!acc[id]) {
-          acc[id] = { name: item.product.name, image_url: item.product.image_url, qty: 0 };
-        }
-        acc[id].qty += item.quantity;
+        orders.forEach((o) => {
+          const dateStr = o.created_at.split("T")[0];
+          const dayData = last7Days.find((d) => d.date === dateStr);
+          if (dayData) dayData.total += o.total;
+        });
+        setSalesData(last7Days);
       }
-    });
-    return acc;
-  }, {} as Record<string, { name: string; image_url: string | null; qty: number }>);
 
-  const topProductsData = Object.values(productsMap)
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
+      if (orderItems) {
+        // Menu Engineering Matrix
+        const itemStats: Record<string, { qty: number, marginTotal: number, name: string }> = {};
+        orderItems.forEach((item: any) => {
+          const name = item.product_name;
+          const cogs = item.products?.cogs || 0;
+          const sellingPrice = item.unit_price;
+          const margin = sellingPrice - cogs;
 
-  const setPreset = (days: number) => {
-    const today = new Date();
-    const past = new Date();
-    past.setDate(today.getDate() - days);
-    setFromDate(past.toISOString().split("T")[0]);
-    setToDate(today.toISOString().split("T")[0]);
+          if (!itemStats[name]) itemStats[name] = { qty: 0, marginTotal: 0, name };
+          itemStats[name].qty += item.quantity;
+          itemStats[name].marginTotal += (margin * item.quantity);
+        });
+
+        let totalQty = 0;
+        let totalMargin = 0;
+        const matrixArr = Object.values(itemStats).map(s => {
+          const avgMargin = s.qty > 0 ? s.marginTotal / s.qty : 0;
+          totalQty += s.qty;
+          totalMargin += s.marginTotal;
+          return { name: s.name, qty: s.qty, margin: avgMargin };
+        });
+
+        const avgMenuQty = matrixArr.length > 0 ? totalQty / matrixArr.length : 0;
+        const avgMenuMargin = totalQty > 0 ? totalMargin / totalQty : 0;
+
+        const classifiedMatrix = matrixArr.map(m => {
+          let category = "Dog";
+          let color = "#ef4444"; // red
+          if (m.qty >= avgMenuQty && m.margin >= avgMenuMargin) { category = "Star"; color = "#eab308"; } // yellow
+          else if (m.qty >= avgMenuQty && m.margin < avgMenuMargin) { category = "Plowhorse"; color = "#3b82f6"; } // blue
+          else if (m.qty < avgMenuQty && m.margin >= avgMenuMargin) { category = "Puzzle"; color = "#a855f7"; } // purple
+          
+          return { ...m, category, color };
+        });
+
+        setMatrixData(classifiedMatrix);
+      }
+    }
+    fetchData();
+  }, [supabase]);
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-card border p-3 rounded-lg shadow-xl text-sm">
+          <p className="font-bold text-base mb-1">{data.name}</p>
+          <p className="text-muted-foreground">Kategori: <strong style={{color: data.color}}>{data.category}</strong></p>
+          <p className="text-muted-foreground">Terjual: <strong>{data.qty} porsi</strong></p>
+          <p className="text-muted-foreground">Margin/porsi: <strong>{formatRupiah(data.margin)}</strong></p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <h1 className="text-3xl font-bold tracking-tight">Laporan Penjualan</h1>
-
-      <div className="flex flex-wrap items-end gap-4 bg-muted/50 p-4 rounded-lg">
-        <div className="space-y-1">
-          <label className="text-xs font-medium">Dari Tanggal</label>
-          <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium">Sampai Tanggal</label>
-          <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setPreset(0)}>Hari Ini</Button>
-          <Button variant="outline" onClick={() => setPreset(7)}>Minggu Ini</Button>
-          <Button variant="outline" onClick={() => setPreset(30)}>Bulan Ini</Button>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Laporan & Analitik</h1>
+          <p className="text-muted-foreground mt-1">
+            Data intelijen bisnis tingkat lanjut untuk kafe Anda. (30 Hari Terakhir)
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
-            <div className="p-2 bg-primary/10 rounded-full">
-              <DollarSign className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatRupiah(totalPendapatan)}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Transaksi</CardTitle>
-            <div className="p-2 bg-blue-500/10 rounded-full">
-              <Receipt className="h-4 w-4 text-blue-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTransaksi}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Rata-rata Transaksi</CardTitle>
-            <div className="p-2 bg-green-500/10 rounded-full">
-              <CreditCard className="h-4 w-4 text-green-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatRupiah(rataRata)}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Metode Pembayaran</CardTitle>
-            <div className="p-2 bg-purple-500/10 rounded-full">
-              <Banknote className="h-4 w-4 text-purple-500" />
-            </div>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <div className="flex justify-between font-medium">
-              <span>Tunai:</span><span className="text-primary">{cashCount}</span>
-            </div>
-            <div className="flex justify-between font-medium mt-1">
-              <span>QRIS:</span><span className="text-primary">{qrisCount}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="matrix" className="space-y-4">
+        <TabsList className="bg-muted/50 p-1">
+          <TabsTrigger value="matrix" className="data-[state=active]:bg-background">Menu Engineering</TabsTrigger>
+          <TabsTrigger value="staff" className="data-[state=active]:bg-background">Kinerja Staf (Kasir)</TabsTrigger>
+          <TabsTrigger value="sales" className="data-[state=active]:bg-background">Penjualan Umum</TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border-none shadow-md bg-card/50">
-          <CardHeader>
-            <CardTitle>Tren Penjualan</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="opacity-10" />
-                <XAxis dataKey="date" tickFormatter={(v) => v.substring(0, 3)} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <YAxis tickFormatter={(v) => `Rp ${v/1000}k`} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  formatter={(value: any) => formatRupiah(Number(value))} 
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                />
-                <Line type="monotone" dataKey="total" stroke="currentColor" className="stroke-primary" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md bg-card/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              5 Produk Terlaris
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px] overflow-y-auto hide-scrollbar">
-            <div className="flex flex-col gap-3">
-              {topProductsData.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-10">
-                  <UtensilsCrossed className="h-10 w-10 opacity-20 mb-2" />
-                  <p className="text-sm">Belum ada data penjualan.</p>
-                </div>
-              ) : (
-                topProductsData.map((product, index) => (
-                  <div key={product.name} className="flex items-center gap-4 p-2 pr-4 bg-background rounded-full border shadow-sm transition-all hover:shadow-md hover:border-primary/50">
-                    <div className="w-14 h-14 shrink-0 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-background shadow-inner">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <UtensilsCrossed className="h-6 w-6 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">Terjual <span className="font-bold text-primary">{product.qty}</span> porsi</p>
-                    </div>
-                    <div className={cn("w-8 h-8 shrink-0 flex items-center justify-center font-bold rounded-full text-sm", 
-                      index === 0 ? "bg-yellow-400 text-yellow-900 shadow-sm" : 
-                      index === 1 ? "bg-slate-300 text-slate-800 shadow-sm" :
-                      index === 2 ? "bg-amber-600 text-amber-50 shadow-sm" :
-                      "bg-muted text-muted-foreground"
-                    )}>
-                      #{index + 1}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Transaksi (Completed)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead className="[&_tr]:border-b">
-                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Tanggal</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">No. Pesanan</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Pelanggan</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Pembayaran</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Total</th>
-                </tr>
-              </thead>
-              <tbody className="[&_tr:last-child]:border-0">
-                {orders.slice(0, 10).map((order) => (
-                  <tr key={order.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <td className="p-4 align-middle">{formatDate(order.created_at)}</td>
-                    <td className="p-4 align-middle font-medium">{order.order_number}</td>
-                    <td className="p-4 align-middle">{order.customer_name || "Tamu"}</td>
-                    <td className="p-4 align-middle uppercase">{order.payment_method}</td>
-                    <td className="p-4 align-middle text-right font-medium">{formatRupiah(order.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {orders.length === 0 && (
-              <div className="py-6 text-center text-muted-foreground">Tidak ada transaksi di rentang waktu ini.</div>
-            )}
-            {orders.length > 10 && (
-              <div className="py-2 text-center text-xs text-muted-foreground">
-                Menampilkan 10 transaksi terakhir.
+        <TabsContent value="matrix" className="space-y-4">
+          <Card className="border-none shadow-md bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Target className="w-5 h-5 text-primary"/> Menu Engineering Matrix</CardTitle>
+              <CardDescription>Pemetaan profitabilitas menu. X = Jumlah Terjual (Popularitas), Y = Margin Keuntungan per Porsi.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[450px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis type="number" dataKey="qty" name="Popularitas (Terjual)" tickLine={false} axisLine={false} tick={{fontSize: 12}} />
+                    <YAxis type="number" dataKey="margin" name="Margin (Rp)" tickFormatter={v => `Rp${v/1000}k`} tickLine={false} axisLine={false} tick={{fontSize: 12}} />
+                    <ZAxis type="category" dataKey="name" name="Menu" />
+                    <RechartsTooltip content={<CustomTooltip />} cursor={{strokeDasharray: '3 3'}} />
+                    <Scatter name="Menu" data={matrixData} fill="#8884d8">
+                      {matrixData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Scatter>
+                  </ScatterChart>
+                </ResponsiveContainer>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+                <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-xl border border-yellow-200 dark:border-yellow-900/30">
+                  <h4 className="font-bold text-yellow-700 dark:text-yellow-500 flex items-center mb-2"><Star className="w-4 h-4 mr-2"/> STAR</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Laris & Margin Tinggi. Promosikan habis-habisan!</p>
+                  <ul className="text-sm font-medium space-y-1">
+                    {matrixData.filter(m => m.category === "Star").slice(0,3).map(m => <li key={m.name}>• {m.name}</li>)}
+                  </ul>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-xl border border-blue-200 dark:border-blue-900/30">
+                  <h4 className="font-bold text-blue-700 dark:text-blue-500 flex items-center mb-2"><TrendingUp className="w-4 h-4 mr-2"/> PLOWHORSE</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Sangat Laris tapi Margin Tipis. Coba naikkan harga sedikit.</p>
+                  <ul className="text-sm font-medium space-y-1">
+                    {matrixData.filter(m => m.category === "Plowhorse").slice(0,3).map(m => <li key={m.name}>• {m.name}</li>)}
+                  </ul>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-xl border border-purple-200 dark:border-purple-900/30">
+                  <h4 className="font-bold text-purple-700 dark:text-purple-500 flex items-center mb-2"><Target className="w-4 h-4 mr-2"/> PUZZLE</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Margin Sangat Besar tapi Kurang Laku. Minta Kasir upselling!</p>
+                  <ul className="text-sm font-medium space-y-1">
+                    {matrixData.filter(m => m.category === "Puzzle").slice(0,3).map(m => <li key={m.name}>• {m.name}</li>)}
+                  </ul>
+                </div>
+                <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-xl border border-red-200 dark:border-red-900/30">
+                  <h4 className="font-bold text-red-700 dark:text-red-500 flex items-center mb-2"><Trash2 className="w-4 h-4 mr-2" /> DOG</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Margin Tipis & Tidak Laku. Pertimbangkan untuk dihapus.</p>
+                  <ul className="text-sm font-medium space-y-1">
+                    {matrixData.filter(m => m.category === "Dog").slice(0,3).map(m => <li key={m.name}>• {m.name}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="staff" className="space-y-4">
+          <Card className="border-none shadow-md bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-primary"/> Kinerja Kasir & Upselling (30 Hari)</CardTitle>
+              <CardDescription>Peringkat staf berdasarkan total pendapatan yang dihasilkan dan rata-rata nilai transaksi (ATV).</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-muted-foreground bg-muted/50 uppercase border-b">
+                    <tr>
+                      <th className="px-4 py-4 font-medium rounded-tl-lg">Peringkat</th>
+                      <th className="px-4 py-4 font-medium">Nama Kasir</th>
+                      <th className="px-4 py-4 font-medium text-right">Total Transaksi (Nota)</th>
+                      <th className="px-4 py-4 font-medium text-right">Rata-rata Penjualan (ATV)</th>
+                      <th className="px-4 py-4 font-medium text-right rounded-tr-lg">Total Pendapatan Dihasilkan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {staffData.map((staff, index) => (
+                      <tr key={index} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-4 py-4 font-bold">
+                          {index === 0 ? <Crown className="w-5 h-5 text-yellow-500 inline mr-1" /> : `#${index + 1}`}
+                        </td>
+                        <td className="px-4 py-4 font-semibold text-foreground">{staff.name}</td>
+                        <td className="px-4 py-4 text-right text-muted-foreground">{staff.count} Nota</td>
+                        <td className="px-4 py-4 text-right font-medium text-primary">{formatRupiah(staff.atv)}</td>
+                        <td className="px-4 py-4 text-right font-bold text-lg">{formatRupiah(staff.revenue)}</td>
+                      </tr>
+                    ))}
+                    {staffData.length === 0 && (
+                      <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Belum ada data shift staf.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sales" className="space-y-4">
+          <Card className="border-none shadow-md bg-card/50">
+            <CardHeader>
+              <CardTitle>Tren Penjualan (7 Hari Terakhir)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={v => `Rp${v/1000}k`} axisLine={false} tickLine={false} />
+                  <RechartsTooltip 
+                    cursor={{fill: 'var(--theme-primary)', opacity: 0.1}}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(val: any) => [formatRupiah(Number(val)), "Omzet"]}
+                  />
+                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
