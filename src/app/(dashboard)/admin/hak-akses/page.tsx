@@ -16,13 +16,14 @@ interface Role {
 
 const AVAILABLE_FEATURES = [
   { id: "dashboard", label: "Dashboard (Ringkasan)" },
-  { id: "pos", label: "Kasir / POS" },
+  { id: "pos", label: "Kasir / POS (KDS, Shift, Pelanggan)" },
   { id: "pesanan", label: "Kelola Pesanan (Dapur)" },
-  { id: "menu", label: "Kelola Menu / Produk" },
+  { id: "driver", label: "Tugas Antaran (Driver)" },
+  { id: "menu", label: "Kelola Menu (Bahan, Stok, Waste)" },
   { id: "laporan", label: "Laporan & Statistik" },
   { id: "reservasi", label: "Reservasi Meja" },
-  { id: "admin_log", label: "Admin & Log Aktivitas" },
-  { id: "hak_akses", label: "Pengaturan Hak Akses" },
+  { id: "admin_log", label: "Admin & Log Aktivitas (QR)" },
+  { id: "hak_akses", label: "Pengaturan Sistem (User & Akses)" },
 ];
 
 export default function HakAksesPage() {
