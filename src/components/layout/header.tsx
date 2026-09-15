@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   onMenuClick: () => void;
+  user?: any;
 }
 
-export function Header({ onMenuClick }: HeaderProps) {
+export function Header({ onMenuClick, user }: HeaderProps) {
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState<string>("");
 
@@ -56,20 +57,20 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   const quickShortcuts = [
-    { href: "/pos", icon: ShoppingCart, title: "Kasir / POS" },
-    { href: "/kds", icon: ChefHat, title: "Dapur / KDS" },
-    { href: "/pesanan", icon: ClipboardList, title: "Pesanan" },
-    { href: "/driver", icon: Bike, title: "Tugas Antaran" },
-    { href: "/shift", icon: KeySquare, title: "Shift Kasir" },
-    { href: "/pelanggan", icon: Users, title: "Pelanggan & Poin" },
-    { href: "/reservasi", icon: Calendar, title: "Reservasi Meja" },
-    { href: "/menu", icon: UtensilsCrossed, title: "Menu & Produk" },
-    { href: "/bahan-baku", icon: Combine, title: "Bahan Baku" },
-    { href: "/stok", icon: Archive, title: "Stok Barang" },
-    { href: "/waste", icon: Trash2, title: "Waste & Spoilage" },
-    { href: "/laporan", icon: BarChart3, title: "Laporan & Analitik" },
-    { href: "/admin/qr-meja", icon: QrCode, title: "QR Meja" },
-    { href: "/admin/users", icon: UserCog, title: "Manajemen User" },
+    { href: "/pos", icon: ShoppingCart, title: "Kasir / POS", permission: "pos" },
+    { href: "/kds", icon: ChefHat, title: "Dapur / KDS", permission: "pos" },
+    { href: "/pesanan", icon: ClipboardList, title: "Pesanan", permission: "pesanan" },
+    { href: "/driver", icon: Bike, title: "Tugas Antaran", permission: "driver" },
+    { href: "/shift", icon: KeySquare, title: "Shift Kasir", permission: "pos" },
+    { href: "/pelanggan", icon: Users, title: "Pelanggan & Poin", permission: "pos" },
+    { href: "/reservasi", icon: Calendar, title: "Reservasi Meja", permission: "reservasi" },
+    { href: "/menu", icon: UtensilsCrossed, title: "Menu & Produk", permission: "menu" },
+    { href: "/bahan-baku", icon: Combine, title: "Bahan Baku", permission: "menu" },
+    { href: "/stok", icon: Archive, title: "Stok Barang", permission: "menu" },
+    { href: "/waste", icon: Trash2, title: "Waste & Spoilage", permission: "menu" },
+    { href: "/laporan", icon: BarChart3, title: "Laporan & Analitik", permission: "laporan" },
+    { href: "/admin/qr-meja", icon: QrCode, title: "QR Meja", permission: "admin_log" },
+    { href: "/admin/users", icon: UserCog, title: "Manajemen User", permission: "hak_akses" },
   ];
 
   const pageInfo = getPageInfo();
@@ -105,6 +106,10 @@ export function Header({ onMenuClick }: HeaderProps) {
             {/* Quick Shortcuts */}
             <div className="hidden md:flex items-center gap-1 border-r border-border pr-5 mr-1 overflow-x-auto hide-scrollbar max-w-[400px] lg:max-w-2xl" style={{ scrollBehavior: 'smooth' }}>
               {quickShortcuts.map((s, idx) => {
+                // Check permissions
+                const hasPermission = user?.permissions?.includes(s.permission) || s.permission === "dashboard";
+                if (!hasPermission) return null;
+
                 const isCurrent = pathname === s.href || pathname?.startsWith(`${s.href}/`);
                 if (isCurrent) return null; // Don't show shortcut to current page
                 return (
