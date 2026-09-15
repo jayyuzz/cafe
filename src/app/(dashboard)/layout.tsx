@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   useEffect(() => {
@@ -66,12 +67,33 @@ export default function DashboardLayout({
     checkUser();
   }, [router, supabase]);
 
+  useEffect(() => {
+    if (user && (user as any).permissions) {
+      const perms = (user as any).permissions;
+      if (pathname === "/" && !perms.includes("dashboard")) {
+        // Redirect to their first available menu
+        if (perms.includes("pos")) router.push("/pos");
+        else if (perms.includes("pesanan")) router.push("/pesanan");
+        else if (perms.includes("driver")) router.push("/driver");
+        else if (perms.includes("menu")) router.push("/menu");
+        else if (perms.includes("laporan")) router.push("/laporan");
+        else if (perms.includes("admin_log")) router.push("/admin/qr-meja");
+        else if (perms.includes("hak_akses")) router.push("/admin/users");
+      }
+    }
+  }, [pathname, user, router]);
+
   if (loading) {
     return <div className="flex h-screen w-full items-center justify-center bg-gray-50">Memuat...</div>;
   }
 
   if (!user) {
     return null; // Will redirect
+  }
+
+  // Mencegah dashboard muncul saat proses redirect berjalan
+  if (pathname === "/" && !(user as any).permissions?.includes("dashboard")) {
+    return <div className="flex h-screen w-full items-center justify-center bg-gray-50">Mengalihkan ke halaman yang sesuai...</div>;
   }
 
   return (

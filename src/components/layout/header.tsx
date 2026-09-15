@@ -107,7 +107,7 @@ export function Header({ onMenuClick, user }: HeaderProps) {
             <div className="hidden md:flex items-center gap-1 border-r border-border pr-5 mr-1 overflow-x-auto hide-scrollbar max-w-[400px] lg:max-w-2xl" style={{ scrollBehavior: 'smooth' }}>
               {quickShortcuts.map((s, idx) => {
                 // Check permissions
-                const hasPermission = user?.permissions?.includes(s.permission) || s.permission === "dashboard";
+                const hasPermission = user?.permissions?.includes(s.permission);
                 if (!hasPermission) return null;
 
                 const isCurrent = pathname === s.href || pathname?.startsWith(`${s.href}/`);

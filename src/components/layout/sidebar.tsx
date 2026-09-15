@@ -170,7 +170,7 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
         <nav className="flex-1 space-y-4 px-3 py-4 overflow-y-auto overflow-x-hidden hide-scrollbar">
           {navigationGroups.map((group, groupIdx) => {
-            const filteredItems = group.items.filter((item) => user?.permissions?.includes(item.permission) || item.permission === "dashboard");
+            const filteredItems = group.items.filter((item) => user?.permissions?.includes(item.permission));
             if (filteredItems.length === 0) return null;
 
             return (
