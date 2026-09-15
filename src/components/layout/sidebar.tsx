@@ -24,9 +24,12 @@ import {
   ChefHat,
   UserCog,
   Bike,
+  Key,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -88,6 +91,38 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const supabase = createClient();
   const [isMinimized, setIsMinimized] = useState(true);
+
+  // Password Modal States
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("Password minimal 6 karakter");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Password dan Konfirmasi tidak cocok");
+      return;
+    }
+    
+    setIsUpdatingPassword(true);
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      toast.error(`Gagal mengganti password: ${error.message}`);
+    } else {
+      toast.success("Password berhasil diganti!");
+      setIsPasswordModalOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+    setIsUpdatingPassword(false);
+  };
 
   const handleLogout = async () => {
     try {
@@ -210,7 +245,17 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           
           <Button
             variant="outline"
-            className={cn("justify-start text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0", isMinimized ? "lg:justify-center lg:px-0" : "w-full")}
+            className={cn("justify-start text-muted-foreground shrink-0 mt-1", isMinimized ? "lg:justify-center lg:px-0" : "w-full")}
+            onClick={() => setIsPasswordModalOpen(true)}
+            title={isMinimized ? "Ganti Password" : undefined}
+          >
+            <Key className={cn("h-4 w-4 shrink-0", !isMinimized && "mr-2")} />
+            <span className={cn("transition-all duration-300", isMinimized && "lg:hidden")}>Ganti Password</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className={cn("justify-start text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0 mt-1", isMinimized ? "lg:justify-center lg:px-0" : "w-full")}
             onClick={handleLogout}
             title={isMinimized ? "Keluar" : undefined}
           >
@@ -219,6 +264,41 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </Button>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ganti Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Password Baru</label>
+              <Input
+                type="password"
+                placeholder="Minimal 6 karakter"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Konfirmasi Password</label>
+              <Input
+                type="password"
+                placeholder="Tulis ulang password baru"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPasswordModalOpen(false)}>Batal</Button>
+            <Button onClick={handleUpdatePassword} disabled={isUpdatingPassword || !newPassword || !confirmPassword}>
+              {isUpdatingPassword ? "Menyimpan..." : "Simpan Password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
