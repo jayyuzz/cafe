@@ -65,13 +65,24 @@ export default function UsersManagementPage() {
   };
 
   const handleDelete = async (id: string, userName: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus user ${userName}? (Perhatian: Ini mungkin gagal jika user terikat dengan transaksi)`)) {
-      const { error } = await supabase.from("users").delete().eq("id", id);
-      if (error) {
-        toast.error("Gagal menghapus user. Mungkin terikat dengan data lain.");
-      } else {
+    if (confirm(`Apakah Anda yakin ingin menghapus user ${userName}?`)) {
+      try {
+        const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          if (data.error?.includes("Missing env.SUPABASE_SERVICE_ROLE_KEY")) {
+            toast.error("Gagal: Anda belum memasukkan SUPABASE_SERVICE_ROLE_KEY di file .env.local", { duration: 5000 });
+          } else {
+            toast.error(`Gagal menghapus user: ${data.error}`);
+          }
+          return;
+        }
+        
         toast.success("User berhasil dihapus");
         fetchUsers();
+      } catch (err) {
+        toast.error("Terjadi kesalahan jaringan.");
       }
     }
   };
@@ -96,18 +107,26 @@ export default function UsersManagementPage() {
       if (error) toast.error(`Gagal memperbarui user: ${error.message}`);
       else toast.success("User berhasil diperbarui");
     } else {
-      // In a real app, this should call an Edge Function to create Auth user too.
-      // But we will insert into public.users for DB management purposes.
-      const payloadWithId = {
-        ...payload,
-        id: crypto.randomUUID()
-      };
-      const { error } = await supabase.from("users").insert(payloadWithId);
-      if (error) {
-        toast.error(`Gagal menambah user: ${error.message}`);
-        console.error("Insert user error:", error);
-      } else {
-        toast.success("User berhasil ditambahkan");
+      // Default password for newly created user is "Cafe123!"
+      try {
+        const res = await fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, password: "Cafe123!()" })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.error?.includes("Missing env.SUPABASE_SERVICE_ROLE_KEY")) {
+            toast.error("Gagal: Anda harus mengatur SUPABASE_SERVICE_ROLE_KEY di .env.local terlebih dahulu!", { duration: 7000 });
+          } else {
+            toast.error(`Gagal menambah user: ${data.error}`);
+          }
+        } else {
+          toast.success("User berhasil dibuat! Password standar: Cafe123!()", { duration: 6000 });
+        }
+      } catch (err) {
+        toast.error("Terjadi kesalahan koneksi ke server.");
       }
     }
 
@@ -171,9 +190,9 @@ export default function UsersManagementPage() {
               </div>
 
               {!isEditing && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-md flex gap-2 items-start mt-4">
+                <div className="bg-teal-50 border border-teal-200 text-teal-800 text-xs p-3 rounded-md flex gap-2 items-start mt-4">
                   <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>Catatan: Menambah pengguna di sini hanya menambah profil di *database*. Untuk mengizinkan login, *Auth System* Supabase mungkin memerlukan pendaftaran email/password terpisah.</p>
+                  <p>Catatan: Pengguna yang dibuat di sini akan otomatis dibuatkan akun login. <br/><b>Password Default:</b> <code>Cafe123!()</code></p>
                 </div>
               )}
             </div>
