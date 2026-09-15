@@ -54,6 +54,22 @@ export default function BahanBakuPage() {
       toast.error("Gagal menyimpan bahan baku");
     } else {
       toast.success("Bahan baku berhasil disimpan");
+      
+      // Jika update, hitung ulang COGS untuk produk yang menggunakan bahan baku ini
+      if (id) {
+        const { data: affected } = await supabase.from("product_recipes").select("product_id").eq("material_id", id);
+        if (affected && affected.length > 0) {
+          const productIds = Array.from(new Set(affected.map(a => a.product_id)));
+          for (const pId of productIds) {
+            const { data: recipes } = await supabase.from("product_recipes").select("quantity, raw_material:raw_materials(cost_per_unit)").eq("product_id", pId);
+            if (recipes) {
+              const totalCogs = recipes.reduce((sum, item: any) => sum + (item.quantity * (item.raw_material?.cost_per_unit || 0)), 0);
+              await supabase.from("products").update({ cogs: totalCogs }).eq("id", pId);
+            }
+          }
+        }
+      }
+
       setIsOpen(false);
       fetchData();
     }
