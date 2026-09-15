@@ -85,7 +85,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <div className="flex items-center gap-x-3 lg:gap-x-6">
             
             {/* Quick Shortcuts */}
-            <div className="hidden md:flex items-center gap-2 border-r border-border pr-6">
+            <div className="hidden md:flex items-center gap-1 border-r border-border pr-5 mr-1">
               <Link href="/pos" className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Buka Kasir / POS">
                 <ShoppingCart className="w-5 h-5" />
               </Link>
@@ -94,6 +94,15 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Link>
               <Link href="/pesanan" className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Daftar Pesanan">
                 <ClipboardList className="w-5 h-5" />
+              </Link>
+              <Link href="/shift" className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Shift Kasir">
+                <KeySquare className="w-5 h-5" />
+              </Link>
+              <Link href="/reservasi" className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Daftar Reservasi">
+                <Calendar className="w-5 h-5" />
+              </Link>
+              <Link href="/pelanggan" className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Database Pelanggan">
+                <Users className="w-5 h-5" />
               </Link>
             </div>
 
