@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, LayoutDashboard, ShoppingCart, ChefHat, ClipboardList, UtensilsCrossed, BarChart3, Users, Calendar, Settings, Archive, Combine, Trash2, KeySquare, QrCode, UserCog } from "lucide-react";
+import { Menu, LayoutDashboard, ShoppingCart, ChefHat, ClipboardList, UtensilsCrossed, BarChart3, Users, Calendar, Settings, Archive, Combine, Trash2, KeySquare, QrCode, UserCog, Bike } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -39,6 +39,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     if (pathname?.startsWith("/pos")) return { title: "Kasir / POS", icon: ShoppingCart };
     if (pathname?.startsWith("/kds")) return { title: "Dapur / KDS", icon: ChefHat };
     if (pathname?.startsWith("/pesanan")) return { title: "Pesanan", icon: ClipboardList };
+    if (pathname?.startsWith("/driver")) return { title: "Tugas Antaran", icon: Bike };
     if (pathname?.startsWith("/shift")) return { title: "Shift Kasir", icon: KeySquare };
     if (pathname?.startsWith("/pelanggan")) return { title: "Pelanggan & Poin", icon: Users };
     if (pathname?.startsWith("/reservasi")) return { title: "Reservasi", icon: Calendar };
@@ -58,6 +59,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     { href: "/pos", icon: ShoppingCart, title: "Kasir / POS", colorClass: "text-emerald-600 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400" },
     { href: "/kds", icon: ChefHat, title: "Dapur / KDS", colorClass: "text-orange-600 bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/40 dark:text-orange-400" },
     { href: "/pesanan", icon: ClipboardList, title: "Pesanan", colorClass: "text-blue-600 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400" },
+    { href: "/driver", icon: Bike, title: "Tugas Antaran", colorClass: "text-teal-600 bg-teal-100 hover:bg-teal-200 dark:bg-teal-900/40 dark:text-teal-400" },
     { href: "/shift", icon: KeySquare, title: "Shift Kasir", colorClass: "text-indigo-600 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400" },
     { href: "/pelanggan", icon: Users, title: "Pelanggan & Poin", colorClass: "text-pink-600 bg-pink-100 hover:bg-pink-200 dark:bg-pink-900/40 dark:text-pink-400" },
     { href: "/reservasi", icon: Calendar, title: "Reservasi Meja", colorClass: "text-rose-600 bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/40 dark:text-rose-400" },

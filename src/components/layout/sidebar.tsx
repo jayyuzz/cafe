@@ -23,6 +23,7 @@ import {
   Trash2,
   ChefHat,
   UserCog,
+  Bike,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ const navigationGroups = [
       { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
       { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
       { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
+      { name: "Tugas Antaran", href: "/driver", icon: Bike, permission: "driver" },
       { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
     ]
   },

@@ -119,6 +119,7 @@ export default function UsersManagementPage() {
     admin: "bg-blue-500 hover:bg-blue-600",
     cashier: "bg-green-500 hover:bg-green-600",
     chef: "bg-amber-500 hover:bg-amber-600",
+    driver: "bg-teal-500 hover:bg-teal-600",
     customer: "bg-gray-500 hover:bg-gray-600",
   };
 
@@ -161,6 +162,7 @@ export default function UsersManagementPage() {
                   <option value="admin">Admin (Manager)</option>
                   <option value="cashier">Cashier (Kasir)</option>
                   <option value="chef">Chef (Dapur / Barista)</option>
+                  <option value="driver">Driver (Kurir Internal)</option>
                 </Select>
               </div>
 

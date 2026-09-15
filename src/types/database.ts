@@ -163,7 +163,7 @@ export type User = {
   outlet_id: string | null
   email: string
   name: string
-  role: 'super_admin' | 'admin' | 'cashier' | 'chef' | 'customer'
+  role: 'super_admin' | 'admin' | 'cashier' | 'chef' | 'driver' | 'customer'
   is_member: boolean
   member_discount: number
   is_active: boolean
@@ -276,9 +276,10 @@ export type Order = {
   customer_id: string | null
   customer_name: string | null
   cashier_id: string | null
+  driver_id: string | null
   order_type: 'dine_in' | 'take_away' | 'delivery'
   table_number: number | null
-  status: 'pending' | 'processing' | 'ready' | 'completed' | 'cancelled'
+  status: 'pending' | 'processing' | 'ready' | 'delivering' | 'delivered' | 'completed' | 'cancelled'
   subtotal: number
   discount_amount: number
   discount_label: string | null
@@ -294,6 +295,7 @@ export type Order = {
   updated_at: string
   // Joined fields (optional)
   order_items?: OrderItem[]
+  driver?: User
 }
 
 export type Shift = {
