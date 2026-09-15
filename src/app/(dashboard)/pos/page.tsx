@@ -47,6 +47,10 @@ export default function POSPage() {
 
   const [outlet, setOutlet] = useState<any>(null);
   const [activeShift, setActiveShift] = useState<any>(null);
+  
+  // CRM States
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -63,6 +67,9 @@ export default function POSPage() {
 
       const { data: shifts } = await supabase.from("shifts").select("*").eq("status", "open").limit(1).single();
       setActiveShift(shifts || null);
+      
+      const { data: custs } = await supabase.from("customers").select("*").order("name");
+      if (custs) setCustomers(custs);
     }
     fetchData();
   }, [supabase]);
@@ -150,11 +157,17 @@ export default function POSPage() {
     setIsProcessing(true);
     const orderNumber = `MVE-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
 
+    // Find if the typed customerName exists in the CRM list
+    const matchedCustomer = customers.find(c => c.name.toLowerCase() === customerName.toLowerCase() || c.phone === customerName);
+    const custId = selectedCustomerId || matchedCustomer?.id || null;
+    const finalCustName = matchedCustomer ? matchedCustomer.name : (customerName || "Tamu");
+
     const { data: order, error: orderError } = await supabase.from("orders").insert({
       outlet_id: cart[0].product.outlet_id,
       shift_id: activeShift.id,
       order_number: orderNumber,
-      customer_name: customerName || "Tamu",
+      customer_id: custId,
+      customer_name: finalCustName,
       order_type: orderType,
       table_number: tableNumber,
       status: "pending",
@@ -173,6 +186,18 @@ export default function POSPage() {
       toast.error("Gagal membuat pesanan");
       setIsProcessing(false);
       return;
+    }
+
+    // UPDATE CRM POINTS
+    if (custId) {
+      const currentSpent = matchedCustomer?.total_spent || 0;
+      const currentPoints = matchedCustomer?.points || 0;
+      const earnedPoints = Math.floor(total / 10000); // 1 point per 10.000
+      
+      await supabase.from("customers").update({
+        total_spent: currentSpent + total,
+        points: currentPoints + earnedPoints
+      }).eq("id", custId);
     }
 
     const orderItems = cart.map(item => {
@@ -360,12 +385,29 @@ export default function POSPage() {
             </select>
           )}
           
-          <Input
-            className="h-8 text-xs"
-            placeholder="Nama pelanggan (opsional)"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              className="h-8 text-xs"
+              placeholder="Nama / No. HP Pelanggan (Cari/Ketik)"
+              value={customerName}
+              onChange={(e) => {
+                setCustomerName(e.target.value);
+                const match = customers.find(c => c.name.toLowerCase() === e.target.value.toLowerCase() || c.phone === e.target.value);
+                setSelectedCustomerId(match ? match.id : null);
+              }}
+              list="customer-list"
+            />
+            {selectedCustomerId && (
+              <div className="absolute -bottom-5 left-1 text-[10px] text-amber-600 font-medium">
+                ✓ Member Ditemukan ({customers.find(c => c.id === selectedCustomerId)?.points || 0} Pts)
+              </div>
+            )}
+            <datalist id="customer-list">
+              {customers.map(c => (
+                <option key={c.id} value={c.name}>{c.phone || "Tanpa No. HP"} - {c.points} Pts</option>
+              ))}
+            </datalist>
+          </div>
         </div>
 
         <div className="overflow-y-auto p-3 space-y-2 h-[260px] shrink-0 hide-scrollbar bg-background/30">

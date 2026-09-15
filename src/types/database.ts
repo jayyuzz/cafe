@@ -63,6 +63,12 @@ export type Database = {
         Update: Partial<OrderItem>
         Relationships: []
       }
+      customers: {
+        Row: Customer
+        Insert: Partial<Customer> & Pick<Customer, 'name' | 'outlet_id'>
+        Update: Partial<Customer>
+        Relationships: []
+      }
       raw_materials: {
         Row: RawMaterial
         Insert: Partial<RawMaterial> & Pick<RawMaterial, 'name' | 'unit' | 'outlet_id'>
@@ -180,6 +186,16 @@ export type Product = {
   track_stock: boolean
   current_stock: number
   cogs: number
+  created_at: string
+}
+
+export type Customer = {
+  id: string
+  outlet_id: string
+  name: string
+  phone: string | null
+  points: number
+  total_spent: number
   created_at: string
 }
 
