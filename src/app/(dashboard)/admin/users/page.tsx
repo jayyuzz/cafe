@@ -107,12 +107,12 @@ export default function UsersManagementPage() {
       if (error) toast.error(`Gagal memperbarui user: ${error.message}`);
       else toast.success("User berhasil diperbarui");
     } else {
-      // Default password for newly created user is "Cafe123!"
+      // Default password for newly created user is "cafemve123"
       try {
         const res = await fetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, password: "Cafe123!()" })
+          body: JSON.stringify({ ...payload, password: "cafemve123" })
         });
         const data = await res.json();
 
@@ -123,7 +123,7 @@ export default function UsersManagementPage() {
             toast.error(`Gagal menambah user: ${data.error}`);
           }
         } else {
-          toast.success("User berhasil dibuat! Password standar: Cafe123!()", { duration: 6000 });
+          toast.success("User berhasil dibuat! Password standar: cafemve123", { duration: 6000 });
         }
       } catch (err) {
         toast.error("Terjadi kesalahan koneksi ke server.");
@@ -192,7 +192,7 @@ export default function UsersManagementPage() {
               {!isEditing && (
                 <div className="bg-teal-50 border border-teal-200 text-teal-800 text-xs p-3 rounded-md flex gap-2 items-start mt-4">
                   <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>Catatan: Pengguna yang dibuat di sini akan otomatis dibuatkan akun login. <br/><b>Password Default:</b> <code>Cafe123!()</code></p>
+                  <p>Catatan: Pengguna yang dibuat di sini akan otomatis dibuatkan akun login. <br/><b>Password Default:</b> <code>cafemve123</code></p>
                 </div>
               )}
             </div>
