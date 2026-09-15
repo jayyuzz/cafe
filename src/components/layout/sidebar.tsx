@@ -129,7 +129,7 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   isMinimized && "lg:justify-center"
                 )}
-                onClick={() => onClose()}
+                onClick={() => onClose?.()}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span className={cn("transition-all duration-300 whitespace-nowrap", isMinimized && "lg:hidden")}>{item.name}</span>
