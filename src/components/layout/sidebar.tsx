@@ -42,23 +42,43 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
-  { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
-  { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
-  { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
-  { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
-  { name: "Pelanggan & Poin", href: "/pelanggan", icon: Users, permission: "pos" },
-  { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
-  { name: "Menu & Produk", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
-  { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
-  { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
-  { name: "Waste & Spoilage", href: "/waste", icon: Trash2, permission: "menu" },
-  { name: "Laporan & Analitik", href: "/laporan", icon: BarChart3, permission: "laporan" },
-  { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
-  { name: "Manajemen User", href: "/admin/users", icon: UserCog, permission: "hak_akses" },
-  { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },
-  { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
+const navigationGroups = [
+  {
+    title: "Operasional Harian",
+    items: [
+      { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
+      { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
+      { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
+      { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
+      { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
+    ]
+  },
+  {
+    title: "Pelanggan & Booking",
+    items: [
+      { name: "Pelanggan & Poin", href: "/pelanggan", icon: Users, permission: "pos" },
+      { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
+    ]
+  },
+  {
+    title: "Menu & Inventaris",
+    items: [
+      { name: "Menu & Produk", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
+      { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
+      { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
+      { name: "Waste & Spoilage", href: "/waste", icon: Trash2, permission: "menu" },
+    ]
+  },
+  {
+    title: "Manajerial & Admin",
+    items: [
+      { name: "Laporan & Analitik", href: "/laporan", icon: BarChart3, permission: "laporan" },
+      { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
+      { name: "Manajemen User", href: "/admin/users", icon: UserCog, permission: "hak_akses" },
+      { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },
+      { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
+    ]
+  }
 ];
 
 export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
@@ -111,29 +131,41 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </Button>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto overflow-x-hidden hide-scrollbar">
-          {navigation
-            .filter((item) => user?.permissions?.includes(item.permission) || item.permission === "dashboard")
-            .map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-            const isActuallyActive = item.href === "/" ? pathname === "/" : isActive;
+        <nav className="flex-1 space-y-4 px-3 py-4 overflow-y-auto overflow-x-hidden hide-scrollbar">
+          {navigationGroups.map((group, groupIdx) => {
+            const filteredItems = group.items.filter((item) => user?.permissions?.includes(item.permission) || item.permission === "dashboard");
+            if (filteredItems.length === 0) return null;
+
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                title={isMinimized ? item.name : undefined}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors shrink-0",
-                  isActuallyActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  isMinimized && "lg:justify-center"
-                )}
-                onClick={() => onClose?.()}
-              >
-                <item.icon className="h-5 w-5 shrink-0" />
-                <span className={cn("transition-all duration-300 whitespace-nowrap", isMinimized && "lg:hidden")}>{item.name}</span>
-              </Link>
+              <div key={groupIdx} className="space-y-1 relative">
+                <div className={cn("px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-all whitespace-nowrap", isMinimized && "opacity-0 h-0 mb-0 overflow-hidden")}>
+                  {group.title}
+                </div>
+                {isMinimized && groupIdx > 0 && <div className="h-px bg-border my-2 mx-4" />}
+                
+                {filteredItems.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  const isActuallyActive = item.href === "/" ? pathname === "/" : isActive;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      title={isMinimized ? item.name : undefined}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors shrink-0",
+                        isActuallyActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        isMinimized && "lg:justify-center"
+                      )}
+                      onClick={() => onClose?.()}
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      <span className={cn("transition-all duration-300 whitespace-nowrap", isMinimized && "lg:hidden")}>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
