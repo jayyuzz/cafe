@@ -10,7 +10,7 @@ import {
   ShoppingCart, Search, UtensilsCrossed, Plus, Minus, Trash2,
   X, Coffee, CupSoda, Utensils, Cookie, Cake, LayoutGrid,
   ChevronDown, MapPin, Bike, MessageSquare, ChevronRight,
-  Star, QrCode, Banknote, CheckCircle2,
+  Star, QrCode, Banknote, CheckCircle2, Navigation,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -138,13 +138,14 @@ function OrderPageContent() {
   const [showCart, setShowCart] = useState(false);
   const [showVariantPicker, setShowVariantPicker] = useState<Product | null>(null);
 
-  const [orderType, setOrderType] = useState<"dine_in" | "take_away">(
-    tableParam ? "dine_in" : "take_away"
+  const [orderType, setOrderType] = useState<"dine_in" | "take_away" | "delivery">(
+    (tableParam ? "dine_in" : "take_away") as "dine_in" | "take_away" | "delivery"
   );
   const [tableNumber, setTableNumber] = useState<number | null>(
     tableParam ? parseInt(tableParam) : null
   );
   const [customerName, setCustomerName] = useState("");
+  const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -247,6 +248,10 @@ function OrderPageContent() {
       toast.error("Pilih nomor meja terlebih dahulu");
       return;
     }
+    if (orderType === "delivery" && !notes.trim()) {
+      toast.error("Alamat pengiriman harus diisi");
+      return;
+    }
     if (!customerName.trim()) {
       toast.error("Silakan isi nama kamu terlebih dahulu");
       return;
@@ -268,7 +273,7 @@ function OrderPageContent() {
       discount_amount: 0,
       total,
       payment_method: paymentMethod,
-      notes: null,
+      notes: notes.trim() || null,
     }).select().single();
 
     if (orderError || !order) {
@@ -316,8 +321,12 @@ function OrderPageContent() {
   });
 
   const canSubmit = cart.length > 0 && paymentMethod !== null && !isSubmitting
-    && (orderType === "take_away" || tableNumber !== null)
-    && customerName.trim().length > 0;
+    && customerName.trim().length > 0
+    && (
+      (orderType === "dine_in" && tableNumber !== null) ||
+      (orderType === "take_away") ||
+      (orderType === "delivery" && notes.trim().length > 0)
+    );
 
   /* ── Loading ────────────────────────────────────────────────────────────── */
   if (isLoading) {
@@ -719,32 +728,41 @@ function OrderPageContent() {
             {/* Checkout form */}
             <div className="px-5 pt-3 pb-6 border-t border-border/50 space-y-4">
 
-              {/* ── Order type ── */}
+              {/* 🍔 Order type 🍔 */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Tipe Pesanan</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => { setOrderType("dine_in"); if (tableParam) setTableNumber(parseInt(tableParam)); }}
                     className={cn(
-                      "flex items-center justify-center gap-2 h-10 rounded-xl text-xs font-bold border-2 transition-all",
+                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
                       orderType === "dine_in" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
                     )}
                   >
-                    <MapPin className="h-3.5 w-3.5" /> Makan Sini
+                    <MapPin className="h-4 w-4" /> Makan Sini
                   </button>
                   <button
                     onClick={() => { setOrderType("take_away"); setTableNumber(null); }}
                     className={cn(
-                      "flex items-center justify-center gap-2 h-10 rounded-xl text-xs font-bold border-2 transition-all",
+                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
                       orderType === "take_away" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
                     )}
                   >
-                    <Bike className="h-3.5 w-3.5" /> Bawa Pulang
+                    <Bike className="h-4 w-4" /> Bawa Pulang
+                  </button>
+                  <button
+                    onClick={() => { setOrderType("delivery"); setTableNumber(null); }}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 h-12 rounded-xl text-[10px] font-bold border-2 transition-all",
+                      orderType === "delivery" ? "border-amber-900 bg-amber-900 text-amber-50" : "border-border text-muted-foreground"
+                    )}
+                  >
+                    <Navigation className="h-4 w-4" /> Pesan Antar
                   </button>
                 </div>
               </div>
 
-              {/* ── Table picker ── */}
+              {/* 🍔 Table picker 🍔 */}
               {orderType === "dine_in" && (
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Nomor Meja</p>
@@ -754,7 +772,7 @@ function OrderPageContent() {
                       onChange={e => setTableNumber(Number(e.target.value))}
                       className="w-full h-10 pl-4 pr-9 rounded-xl border-2 border-border bg-muted/30 text-sm font-medium appearance-none focus:outline-none focus:border-amber-900/50"
                     >
-                      <option value="">— Pilih nomor meja —</option>
+                      <option value="">👉 Pilih nomor meja 👈</option>
                       {Array.from({ length: outlet.total_tables || 20 }, (_, i) => i + 1).map(n => (
                         <option key={n} value={n}>Meja {n}</option>
                       ))}
@@ -764,10 +782,26 @@ function OrderPageContent() {
                 </div>
               )}
 
-              {/* ── Customer name ── */}
+              {/* 🍔 Address input 🍔 */}
+              {orderType === "delivery" && (
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Alamat Pengiriman <span className="text-red-500">*</span>
+                  </p>
+                  <textarea
+                    placeholder="Masukkan alamat lengkap pengiriman..."
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    rows={3}
+                    className="w-full p-4 rounded-xl border-2 border-border bg-muted/30 text-sm focus:outline-none focus:border-amber-900/50 resize-none"
+                  />
+                </div>
+              )}
+
+              {/* 🍔 Customer name 🍔 */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Nama <span className="text-red-500">*</span>
+                  Nama Pemesan <span className="text-red-500">*</span>
                 </p>
                 <input
                   type="text"
@@ -828,10 +862,12 @@ function OrderPageContent() {
                   </span>
                 ) : !customerName.trim() ? (
                   "Isi Nama Terlebih Dahulu"
+                ) : (orderType === "delivery" && !notes.trim()) ? (
+                  "Isi Alamat Pengiriman"
                 ) : !paymentMethod ? (
                   "Pilih Metode Pembayaran"
                 ) : (
-                  `🛎️  Pesan Sekarang · ${formatRupiah(total)}`
+                  `Pesanan Selesai - ${formatRupiah(total)}`
                 )}
               </button>
 
