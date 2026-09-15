@@ -139,24 +139,25 @@
   }
 
   .theme-earthy {
-    --background: 35 30% 95%;
-    --foreground: 20 30% 20%;
-    --card: 35 30% 97%;
-    --card-foreground: 20 30% 20%;
-    --popover: 35 30% 97%;
-    --popover-foreground: 20 30% 20%;
-    --primary: 15 50% 50%;
+    /* Premium International Cafe Theme */
+    --background: 40 20% 97%;
+    --foreground: 20 20% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 20% 15%;
+    --primary: 152 45% 25%; /* Deep Premium Green */
     --primary-foreground: 0 0% 100%;
-    --secondary: 100 20% 60%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 35 20% 85%;
-    --muted-foreground: 20 20% 40%;
-    --accent: 100 20% 60%;
-    --accent-foreground: 0 0% 100%;
-    --border: 35 20% 80%;
-    --input: 35 20% 80%;
-    --ring: 15 50% 50%;
-    --radius: 1rem;
+    --secondary: 35 25% 90%;
+    --secondary-foreground: 152 45% 25%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 20 10% 45%;
+    --accent: 35 40% 85%;
+    --accent-foreground: 152 45% 25%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 152 45% 25%;
+    --radius: 0.5rem;
   }
 }
 

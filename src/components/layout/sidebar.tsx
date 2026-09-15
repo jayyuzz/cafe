@@ -22,6 +22,7 @@ import {
   Users,
   Trash2,
   ChefHat,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,26 +38,27 @@ interface ExtendedUser extends User {
 
 interface SidebarProps {
   user: ExtendedUser | null;
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
   { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
   { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
-  { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
   { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
-  { name: "Menu", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
-  { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
-  { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
+  { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
   { name: "Pelanggan & Poin", href: "/pelanggan", icon: Users, permission: "pos" },
-  { name: "Catat Waste", href: "/waste", icon: Trash2, permission: "menu" },
-  { name: "Laporan", href: "/laporan", icon: BarChart3, permission: "laporan" },
   { name: "Reservasi", href: "/reservasi", icon: Calendar, permission: "reservasi" },
+  { name: "Menu & Produk", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
+  { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
+  { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
+  { name: "Waste & Spoilage", href: "/waste", icon: Trash2, permission: "menu" },
+  { name: "Laporan & Analitik", href: "/laporan", icon: BarChart3, permission: "laporan" },
   { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
-  { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
+  { name: "Manajemen User", href: "/admin/users", icon: UserCog, permission: "hak_akses" },
   { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },
+  { name: "Admin Log", href: "/admin", icon: Settings, permission: "admin_log" },
 ];
 
 export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
