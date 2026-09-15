@@ -51,8 +51,16 @@ export async function DELETE(request: Request) {
     // Delete Auth User (should cascade to public.users)
     const { error } = await adminAuthClient.auth.admin.deleteUser(id);
 
-    if (error) {
+    // Abaikan error jika user memang tidak ada di sistem Auth (mungkin dibuat manual sebelum integrasi API)
+    if (error && !error.message.includes("User not found")) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // Secara eksplisit hapus juga dari public.users (sebagai backup jika cascade gagal/user tidak ada di Auth)
+    const { error: dbError } = await adminAuthClient.from('users').delete().eq('id', id);
+    
+    if (dbError) {
+      return NextResponse.json({ error: dbError.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true });
