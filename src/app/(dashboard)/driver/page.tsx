@@ -15,10 +15,17 @@ export default function DriverDashboardPage() {
   const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Hardcoded for now. In a real app, get from Supabase Auth
-  const driverId = "driver-123"; 
+  const [driverId, setDriverId] = useState<string | null>(null);
 
   const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setDriverId(data.user.id);
+      }
+    });
+  }, []);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -66,9 +73,11 @@ export default function DriverDashboardPage() {
   }, []);
 
   const handleUpdateStatus = async (orderId: string, newStatus: 'delivering' | 'delivered') => {
-    const payload = newStatus === 'delivering' 
-      ? { status: newStatus, driver_id: driverId }
-      : { status: newStatus };
+    const payload: any = { status: newStatus };
+    // Jika driver belum login atau user.id tidak terbaca, kita biarkan kosong agar tidak terjadi error foreign key
+    if (newStatus === 'delivering' && driverId) {
+      payload.driver_id = driverId;
+    }
 
     const { error } = await supabase
       .from("orders")
@@ -169,7 +178,11 @@ export default function DriverDashboardPage() {
                         variant="outline"
                         size="icon"
                         className="border-green-200 text-green-700 hover:bg-green-50 shrink-0"
-                        onClick={() => window.open(`https://wa.me/${order.customer_phone?.replace(/^0/, '62').replace(/\D/g, '')}`, '_blank')}
+                        onClick={() => {
+                          const waPhone = order.customer_phone?.replace(/^0/, '62').replace(/\D/g, '');
+                          const waText = encodeURIComponent(`Halo kak ${order.customer_name || ''}, saya kurir dari Kafe. Pesanan kakak sedang saya antar menuju lokasi ya. Mohon ditunggu! 🛵`);
+                          window.open(`https://wa.me/${waPhone}?text=${waText}`, '_blank');
+                        }}
                       >
                         <Phone className="w-4 h-4" />
                       </Button>

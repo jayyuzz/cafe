@@ -275,7 +275,8 @@ function OrderPageContent() {
   }, 0);
   const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
   const tax = subtotal * (taxPercentage / 100);
-  const total = subtotal + tax;
+  const ongkir = orderType === "delivery" ? 10000 : 0;
+  const total = subtotal + tax + ongkir;
 
   /* ── Location ──────────────────────────────────────────────────────────── */
   const handleGetLocation = () => {
@@ -934,6 +935,12 @@ function OrderPageContent() {
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>PB1 ({taxPercentage}%)</span>
                     <span>{formatRupiah(tax)}</span>
+                  </div>
+                )}
+                {orderType === "delivery" && (
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Ongkir (Kurir)</span>
+                    <span>{formatRupiah(ongkir)}</span>
                   </div>
                 )}
                 <div className="h-px bg-border my-1" />
