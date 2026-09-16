@@ -116,9 +116,9 @@ export function ProductRecipeEditor({ product, isOpen, onClose }: { product: any
                   ))}
                 </select>
               </div>
-              <div className="w-24 space-y-1">
-                <label className="text-xs font-medium">Jumlah</label>
-                <Input type="number" placeholder="0" value={quantity} onChange={e => setQuantity(e.target.value)} />
+              <div className="w-28 space-y-1">
+                <label className="text-xs font-medium">Takaran</label>
+                <Input type="number" placeholder="Contoh: 15" value={quantity} onChange={e => setQuantity(e.target.value)} />
               </div>
               <Button onClick={addRecipeItem} disabled={isSubmitting || !selectedMaterialId || !quantity}>
                 <Plus className="w-4 h-4 mr-1" /> Tambah
@@ -156,3 +156,4 @@ export function ProductRecipeEditor({ product, isOpen, onClose }: { product: any
     </Dialog>
   );
 }
+
