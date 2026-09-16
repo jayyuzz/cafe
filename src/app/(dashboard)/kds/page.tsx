@@ -137,7 +137,7 @@ export default function KDSPage() {
     return (
       <div key={order.id} className="bg-card border shadow-sm rounded-lg flex flex-col transition-all hover:shadow-md h-full">
         <div className={`px-4 py-2 flex justify-between items-center text-primary-foreground ${order.status === 'pending' ? 'bg-amber-600' : 'bg-blue-600'}`}>
-          <div className="font-bold text-lg">{order.order_number.slice(-4)}</div>
+          <div className="font-bold text-lg">#{order.order_number.split('-').pop()}</div>
           <div className="flex items-center gap-2 text-sm font-medium">
             <Clock className="w-4 h-4" /> {timeDiffMinutes}m
           </div>
