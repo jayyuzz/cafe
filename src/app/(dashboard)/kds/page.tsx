@@ -16,25 +16,28 @@ const playVoiceNotification = () => {
   try {
     // 1. Coba gunakan Speech Synthesis (Suara Robot Google/Browser)
     if ('speechSynthesis' in window) {
-      // Hentikan suara yang sedang berjalan agar tidak bertumpuk
-      window.speechSynthesis.cancel();
+      // Mencegah tumpuk suara tanpa mematikan engine (cancel() kadang membuat Safari/iOS error total)
+      if (window.speechSynthesis.speaking) {
+        return; 
+      }
 
       const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
       msg.lang = 'id-ID'; // Bahasa Indonesia
       
-      // Coba cari suara perempuan secara spesifik (jika ada)
+      // Coba cari suara perempuan (opsional, tidak memaksa jika tidak ada agar tidak error)
       const voices = window.speechSynthesis.getVoices();
-      const femaleVoice = voices.find(v => 
-        v.lang.includes('id') && 
-        (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('damayanti') || v.name.toLowerCase().includes('perempuan') || v.name.includes('Google'))
-      );
-      
-      if (femaleVoice) {
-        msg.voice = femaleVoice;
+      if (voices.length > 0) {
+        const femaleVoice = voices.find(v => 
+          v.lang.includes('id') && 
+          (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('damayanti') || v.name.toLowerCase().includes('perempuan'))
+        );
+        if (femaleVoice) {
+          msg.voice = femaleVoice;
+        }
       }
 
-      msg.rate = 1.0;     // Kecepatan normal
-      msg.pitch = 1.3;    // Nada ditinggikan agar terdengar lebih jelas/perempuan
+      msg.rate = 1.0;
+      msg.pitch = 1.3;
       window.speechSynthesis.speak(msg);
       return;
     }
