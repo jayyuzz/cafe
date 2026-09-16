@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { formatRupiah } from "@/lib/utils";
-import { RawMaterial } from "@/types/database";
+import { formatRupiah, formatDate } from "@/lib/utils";
+import { RawMaterial, RawMaterialMovement } from "@/types/database";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Calculator } from "lucide-react";
+import { Plus, Edit, Trash2, Calculator, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw } from "lucide-react";
 
 export default function BahanBakuPage() {
   const [materials, setMaterials] = useState<RawMaterial[]>([]);
@@ -25,6 +25,23 @@ export default function BahanBakuPage() {
   const [showCalc, setShowCalc] = useState(false);
   const [bulkPrice, setBulkPrice] = useState("");
   const [bulkQty, setBulkQty] = useState("");
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyMaterial, setHistoryMaterial] = useState<RawMaterial | null>(null);
+  const [historyLogs, setHistoryLogs] = useState<RawMaterialMovement[]>([]);
+
+  const openHistory = async (m: RawMaterial) => {
+    setHistoryMaterial(m);
+    setHistoryOpen(true);
+    setHistoryLogs([]);
+    const { data } = await supabase
+      .from("raw_material_movements")
+      .select("*")
+      .eq("material_id", m.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (data) setHistoryLogs(data);
+  };
 
   useEffect(() => {
     if (showCalc && bulkPrice && bulkQty) {
@@ -225,6 +242,9 @@ export default function BahanBakuPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
+                        <Button variant="ghost" size="icon" title="Kartu Stok" onClick={() => openHistory(m)}>
+                          <History className="w-4 h-4 text-blue-600" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => {
                           setId(m.id); setName(m.name); setUnit(m.unit); 
                           setCost(m.cost_per_unit.toString()); setStock(m.current_stock.toString());
@@ -245,9 +265,57 @@ export default function BahanBakuPage() {
           </table>
         </div>
       </div>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Kartu Stok: {historyMaterial?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto mt-4">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-muted-foreground bg-muted/50 uppercase border-b sticky top-0">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Waktu</th>
+                  <th className="px-4 py-3 font-medium">Jenis</th>
+                  <th className="px-4 py-3 font-medium text-right">Perubahan</th>
+                  <th className="px-4 py-3 font-medium">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {historyLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Belum ada riwayat pergerakan stok.</td>
+                  </tr>
+                ) : (
+                  historyLogs.map(log => (
+                    <tr key={log.id} className="hover:bg-muted/30">
+                      <td className="px-4 py-3 whitespace-nowrap">{formatDate(log.created_at)}</td>
+                      <td className="px-4 py-3">
+                        {log.movement_type === 'in' && <span className="inline-flex items-center text-green-600"><ArrowDownToLine className="w-3 h-3 mr-1"/> Masuk</span>}
+                        {log.movement_type === 'out' && <span className="inline-flex items-center text-red-600"><ArrowUpFromLine className="w-3 h-3 mr-1"/> Keluar</span>}
+                        {log.movement_type === 'adjustment' && <span className="inline-flex items-center text-orange-600"><RefreshCcw className="w-3 h-3 mr-1"/> Penyesuaian</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium">
+                        <span className={log.movement_type === 'in' ? 'text-green-600' : (log.movement_type === 'out' ? 'text-red-600' : 'text-orange-600')}>
+                          {log.movement_type === 'in' ? '+' : (log.movement_type === 'out' ? '-' : '')}{log.quantity} {historyMaterial?.unit}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{log.notes || "-"}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setHistoryOpen(false)}>Tutup</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
 
 
 
