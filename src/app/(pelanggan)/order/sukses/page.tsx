@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import {
   CheckCircle2, Coffee, MapPin, Bike, ArrowRight,
-  QrCode, Banknote, Smartphone, Clock,
+  QrCode, Banknote, Smartphone, Clock, MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -195,8 +195,23 @@ function SuksesContent() {
 
         </div>
 
-        {/* ── CTA ── */}
-        <div className="mt-4 space-y-2">
+        {/* 🚀 CTA 🚀 */}
+        <div className="mt-4 space-y-3">
+          {method !== 'cash' && (
+            <a
+              href={`https://wa.me/6282211603512?text=${encodeURIComponent(`Halo Kasir, ini bukti pembayaran untuk pesanan ${orderNumber} sebesar ${formatRupiah(total)}.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full bg-emerald-500 text-white px-5 py-4 rounded-2xl font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                <span>Kirim Bukti Pembayaran (WA)</span>
+              </div>
+              <ArrowRight className="h-4 w-4 opacity-70" />
+            </a>
+          )}
+
           <Link
             href={menuHref}
             className={`flex items-center justify-between w-full text-white px-5 py-4 rounded-2xl font-semibold text-sm shadow-lg active:scale-[0.98] transition-transform ${isQris ? "bg-violet-700 shadow-violet-700/20" : "bg-amber-900 shadow-amber-900/20"}`}
