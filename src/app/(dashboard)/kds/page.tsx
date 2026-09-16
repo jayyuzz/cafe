@@ -25,9 +25,9 @@ const playVoiceNotification = () => {
     }
 
     // 2. Fallback: Jika tidak mendukung Voice, gunakan Web Audio API (Lonceng)
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const WebAudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!WebAudioCtx) return;
+    const ctx = new WebAudioCtx();
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     
