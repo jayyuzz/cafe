@@ -87,6 +87,12 @@ export type Database = {
         Update: Partial<RawMaterial>
         Relationships: []
       }
+      raw_material_movements: {
+        Row: RawMaterialMovement
+        Insert: Partial<RawMaterialMovement> & Pick<RawMaterialMovement, 'material_id' | 'movement_type' | 'quantity'>
+        Update: Partial<RawMaterialMovement>
+        Relationships: []
+      }
       product_recipes: {
         Row: ProductRecipe
         Insert: Partial<ProductRecipe> & Pick<ProductRecipe, 'product_id' | 'material_id' | 'quantity'>
@@ -242,6 +248,15 @@ export type RawMaterial = {
   unit: string
   cost_per_unit: number
   current_stock: number
+  created_at: string
+}
+
+export type RawMaterialMovement = {
+  id: string
+  material_id: string
+  movement_type: 'in' | 'out' | 'adjustment'
+  quantity: number
+  notes: string | null
   created_at: string
 }
 
