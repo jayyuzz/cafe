@@ -8,30 +8,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from "recharts";
 import { Trophy, TrendingUp, Receipt, Banknote, Star, User, Target, Crown, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectOption } from "@/components/ui/select";
 
 export default function LaporanLanjutPage() {
   const [salesData, setSalesData] = useState<any[]>([]);
   const [matrixData, setMatrixData] = useState<any[]>([]);
   const [staffData, setStaffData] = useState<any[]>([]);
   const [profitSummary, setProfitSummary] = useState({ revenue: 0, cogs: 0, profit: 0 });
+  const [timeRange, setTimeRange] = useState("30d");
   const supabase = createClient();
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch 30 days data for basic stats
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+      let startDate = new Date();
+      if (timeRange === 'today') {
+        startDate.setHours(0, 0, 0, 0);
+      } else if (timeRange === '7d') {
+        startDate.setDate(startDate.getDate() - 7);
+      } else if (timeRange === '30d') {
+        startDate.setDate(startDate.getDate() - 30);
+      } else if (timeRange === 'this_month') {
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        startDate.setFullYear(2000); // effectively all time
+      }
+
       const { data: orders } = await supabase
         .from("orders")
         .select("*, shifts(cashier_name)")
-        .gte("created_at", thirtyDaysAgo.toISOString())
+        .gte("created_at", startDate.toISOString())
         .neq("status", "cancelled");
 
       const { data: orderItems } = await supabase
         .from("order_items")
         .select(`*, orders!inner(created_at, status), products(cogs, name)`)
-        .gte("orders.created_at", thirtyDaysAgo.toISOString())
+        .gte("orders.created_at", startDate.toISOString())
         .neq("orders.status", "cancelled");
 
       if (orders) {
@@ -306,3 +318,6 @@ export default function LaporanLanjutPage() {
     </div>
   );
 }
+
+
+

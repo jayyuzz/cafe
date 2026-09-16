@@ -9,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Shield, Trash2, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shield, Trash2, Edit, ChevronLeft, ChevronRight, TrendingUp, Receipt, Banknote } from "lucide-react";
+import { Select, SelectOption } from "@/components/ui/select";
 import { OrderEditor } from "@/components/admin/order-editor";
 
 export default function AdminPage() {
@@ -18,6 +19,8 @@ export default function AdminPage() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [logPage, setLogPage] = useState(1);
   const [orderPage, setOrderPage] = useState(1);
+  const [timeRange, setTimeRange] = useState("today");
+  const [profitSummary, setProfitSummary] = useState({ revenue: 0, cogs: 0, profit: 0 });
   const ITEMS_PER_PAGE = 15;
   const supabase = createClient();
 
@@ -31,11 +34,40 @@ export default function AdminPage() {
   };
 
   const fetchOrders = async () => {
+    let startDate = new Date();
+    if (timeRange === 'today') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeRange === '7d') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeRange === '30d') {
+      startDate.setDate(startDate.getDate() - 30);
+    } else if (timeRange === 'this_month') {
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      startDate.setFullYear(2000); // effectively all time
+    }
+
     const { data } = await supabase
       .from("orders")
       .select("*, order_items(*, product:products(*))")
+      .gte("created_at", startDate.toISOString())
       .order("created_at", { ascending: false });
-    if (data) setOrders(data);
+      
+    if (data) {
+      setOrders(data);
+      
+      // Hitung ringkasan
+      let totalRev = 0;
+      let totalCogs = 0;
+      data.filter(o => o.status !== 'cancelled').forEach(order => {
+        totalRev += order.total;
+        order.order_items?.forEach((item: any) => {
+          totalCogs += (item.product?.cogs || 0) * item.quantity;
+        });
+      });
+      setProfitSummary({ revenue: totalRev, cogs: totalCogs, profit: totalRev - totalCogs });
+    }
   };
 
   useEffect(() => {
@@ -92,9 +124,48 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
-      <div className="flex items-center gap-2">
-        <Shield className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Admin & Log Sistem</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Shield className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+        </div>
+                <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="w-[180px]">
+          <SelectOption value="today">Hari Ini</SelectOption>
+          <SelectOption value="7d">7 Hari Terakhir</SelectOption>
+          <SelectOption value="30d">30 Hari Terakhir</SelectOption>
+          <SelectOption value="this_month">Bulan Ini</SelectOption>
+          <SelectOption value="all">Semua Waktu</SelectOption>
+        </Select>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-medium text-muted-foreground">Total Pendapatan</h3>
+            </div>
+            <div className="mt-4 text-3xl font-bold">{formatRupiah(profitSummary.revenue)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <Receipt className="h-4 w-4 text-orange-500" />
+              <h3 className="text-sm font-medium text-muted-foreground">Estimasi Modal (HPP)</h3>
+            </div>
+            <div className="mt-4 text-3xl font-bold text-orange-600">{formatRupiah(profitSummary.cogs)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <Banknote className="h-4 w-4 text-green-500" />
+              <h3 className="text-sm font-medium text-muted-foreground">Laba Kotor</h3>
+            </div>
+            <div className="mt-4 text-3xl font-bold text-green-600">{formatRupiah(profitSummary.profit)}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="log" className="w-full">
@@ -238,5 +309,9 @@ export default function AdminPage() {
     </div>
   );
 }
+
+
+
+
 
 
