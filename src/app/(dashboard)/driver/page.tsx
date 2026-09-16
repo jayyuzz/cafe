@@ -84,9 +84,18 @@ export default function DriverDashboardPage() {
   };
 
   const openGoogleMaps = (address: string) => {
-    // A real app would have the customer address in the Order type
-    // Fallback search to "Customer Name" + Address if available
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || "Alamat Pelanggan")}`, "_blank");
+    if (!address) return;
+    
+    // Cari apakah ada URL Google Maps di dalam teks (dari tombol Dapatkan Lokasi)
+    const mapUrlMatch = address.match(/(https?:\/\/[^\s]+)/);
+    
+    if (mapUrlMatch && mapUrlMatch[0]) {
+      // Jika ada URL, langsung buka URL tersebut
+      window.open(mapUrlMatch[0], "_blank");
+    } else {
+      // Jika hanya teks biasa, gunakan fitur pencarian Maps
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, "_blank");
+    }
   };
 
   if (isLoading && activeOrders.length === 0) {
