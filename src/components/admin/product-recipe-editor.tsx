@@ -112,7 +112,7 @@ export function ProductRecipeEditor({ product, isOpen, onClose }: { product: any
                 >
                   <option value="">-- Pilih Bahan --</option>
                   {rawMaterials.map(rm => (
-                    <option key={rm.id} value={rm.id}>{rm.name} ({formatRupiah(rm.cost_per_unit)}/{rm.unit})</option>
+                    <option key={rm.id} value={rm.id}>{rm.name} ({rm.unit})</option>
                   ))}
                 </select>
               </div>
