@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Calculator, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw } from "lucide-react";
+import { Plus, Edit, Trash2, Calculator, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, PlusCircle } from "lucide-react";
 
 export default function BahanBakuPage() {
   const [materials, setMaterials] = useState<RawMaterial[]>([]);
@@ -29,6 +29,38 @@ export default function BahanBakuPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyMaterial, setHistoryMaterial] = useState<RawMaterial | null>(null);
   const [historyLogs, setHistoryLogs] = useState<RawMaterialMovement[]>([]);
+
+  const [restockOpen, setRestockOpen] = useState(false);
+  const [restockMaterial, setRestockMaterial] = useState<RawMaterial | null>(null);
+  const [restockQty, setRestockQty] = useState("");
+  const [restockNotes, setRestockNotes] = useState("");
+
+  const handleRestock = async () => {
+    if (!restockMaterial || !restockQty) return;
+    setIsSubmitting(true);
+    const qty = parseFloat(restockQty);
+    const newStock = restockMaterial.current_stock + qty;
+
+    const { error: updateError } = await supabase
+      .from("raw_materials")
+      .update({ current_stock: newStock })
+      .eq("id", restockMaterial.id);
+
+    if (updateError) {
+      toast.error("Gagal menambah stok");
+    } else {
+      await supabase.from("raw_material_movements").insert([{
+        material_id: restockMaterial.id,
+        movement_type: "in",
+        quantity: qty,
+        notes: restockNotes || "Restock Manual"
+      }]);
+      toast.success("Stok berhasil ditambahkan!");
+      setRestockOpen(false);
+      fetchData();
+    }
+    setIsSubmitting(false);
+  };
 
   const openHistory = async (m: RawMaterial) => {
     setHistoryMaterial(m);
@@ -198,7 +230,7 @@ export default function BahanBakuPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Stok Awal</label>
+                <label className="text-sm font-medium">Stok Aktual Saat Ini</label>
                 <Input type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="Contoh: 1000" />
               </div>
             </div>
@@ -242,6 +274,14 @@ export default function BahanBakuPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
+                        <Button variant="ghost" size="icon" title="Tambah Stok (Restock)" onClick={() => {
+                          setRestockMaterial(m);
+                          setRestockQty("");
+                          setRestockNotes("");
+                          setRestockOpen(true);
+                        }}>
+                          <PlusCircle className="w-4 h-4 text-green-600" />
+                        </Button>
                         <Button variant="ghost" size="icon" title="Kartu Stok" onClick={() => openHistory(m)}>
                           <History className="w-4 h-4 text-blue-600" />
                         </Button>
@@ -265,6 +305,28 @@ export default function BahanBakuPage() {
           </table>
         </div>
       </div>
+
+      <Dialog open={restockOpen} onOpenChange={setRestockOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Stok (Restock): {restockMaterial?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Jumlah Ditambahkan ({restockMaterial?.unit})</label>
+              <Input type="number" value={restockQty} onChange={e => setRestockQty(e.target.value)} placeholder="Contoh: 1000" autoFocus />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Keterangan (Opsional)</label>
+              <Input value={restockNotes} onChange={e => setRestockNotes(e.target.value)} placeholder="Contoh: Beli di pasar" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRestockOpen(false)}>Batal</Button>
+            <Button onClick={handleRestock} disabled={isSubmitting || !restockQty}>Simpan Stok</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
         <DialogContent className="max-w-2xl">
