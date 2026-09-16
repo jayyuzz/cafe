@@ -13,6 +13,7 @@ export default function LaporanLanjutPage() {
   const [salesData, setSalesData] = useState<any[]>([]);
   const [matrixData, setMatrixData] = useState<any[]>([]);
   const [staffData, setStaffData] = useState<any[]>([]);
+  const [profitSummary, setProfitSummary] = useState({ revenue: 0, cogs: 0, profit: 0 });
   const supabase = createClient();
 
   useEffect(() => {
@@ -37,7 +38,6 @@ export default function LaporanLanjutPage() {
         // Staff Performance (Cashier/Shift analysis)
         const staffMap: Record<string, { revenue: number, count: number, name: string }> = {};
         orders.forEach(o => {
-          // If shift is linked, use cashier name. Otherwise use "Unknown"
           const cashierName = (o.shifts as any)?.cashier_name || "Kasir Utama";
           if (!staffMap[cashierName]) staffMap[cashierName] = { revenue: 0, count: 0, name: cashierName };
           staffMap[cashierName].revenue += o.total;
@@ -66,6 +66,9 @@ export default function LaporanLanjutPage() {
       }
 
       if (orderItems) {
+        let tRev = 0;
+        let tCogs = 0;
+
         // Menu Engineering Matrix
         const itemStats: Record<string, { qty: number, marginTotal: number, name: string }> = {};
         orderItems.forEach((item: any) => {
@@ -74,10 +77,15 @@ export default function LaporanLanjutPage() {
           const sellingPrice = item.unit_price;
           const margin = sellingPrice - cogs;
 
+          tRev += (sellingPrice * item.quantity);
+          tCogs += (cogs * item.quantity);
+
           if (!itemStats[name]) itemStats[name] = { qty: 0, marginTotal: 0, name };
           itemStats[name].qty += item.quantity;
           itemStats[name].marginTotal += (margin * item.quantity);
         });
+
+        setProfitSummary({ revenue: tRev, cogs: tCogs, profit: tRev - tCogs });
 
         let totalQty = 0;
         let totalMargin = 0;
@@ -131,6 +139,40 @@ export default function LaporanLanjutPage() {
             Data intelijen bisnis tingkat lanjut untuk kafe Anda. (30 Hari Terakhir)
           </p>
         </div>
+      </div>
+
+      {/* Profit & Loss Summary */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-none shadow-md bg-card/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Omzet</CardTitle>
+            <Banknote className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">{formatRupiah(profitSummary.revenue)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Pendapatan Kotor Penjualan</p>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-md bg-card/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total HPP / Modal</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{formatRupiah(profitSummary.cogs)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total biaya bahan mentah</p>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-md bg-card/50 bg-primary/5">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Laba Kotor (Gross Profit)</CardTitle>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">{formatRupiah(profitSummary.profit)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Omzet dikurangi HPP</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="matrix" className="space-y-4">
