@@ -144,13 +144,20 @@ export default function LaporanLanjutPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Laporan & Analitik</h1>
           <p className="text-muted-foreground mt-1">
-            Data intelijen bisnis tingkat lanjut untuk kafe Anda. (30 Hari Terakhir)
+            Data intelijen bisnis tingkat lanjut untuk kafe Anda.
           </p>
         </div>
+        <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
+          <SelectOption value="today">Hari Ini</SelectOption>
+          <SelectOption value="7d">7 Hari Terakhir</SelectOption>
+          <SelectOption value="30d">30 Hari Terakhir</SelectOption>
+          <SelectOption value="this_month">Bulan Ini</SelectOption>
+          <SelectOption value="all">Semua Waktu</SelectOption>
+        </Select>
       </div>
 
       {/* Profit & Loss Summary */}
