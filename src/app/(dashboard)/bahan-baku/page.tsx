@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Calculator } from "lucide-react";
 
 export default function BahanBakuPage() {
   const [materials, setMaterials] = useState<RawMaterial[]>([]);
@@ -21,6 +21,18 @@ export default function BahanBakuPage() {
   const [cost, setCost] = useState("");
   const [stock, setStock] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [showCalc, setShowCalc] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkQty, setBulkQty] = useState("");
+
+  useEffect(() => {
+    if (showCalc && bulkPrice && bulkQty) {
+      const p = parseFloat(bulkPrice) || 0;
+      const q = parseFloat(bulkQty) || 0;
+      if (q > 0) setCost(Math.round(p / q).toString());
+    }
+  }, [showCalc, bulkPrice, bulkQty]);
 
   const fetchData = async () => {
     const { data } = await supabase.from("raw_materials").select("*").order("name");
@@ -99,7 +111,7 @@ export default function BahanBakuPage() {
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
-              setId(""); setName(""); setUnit(""); setCost(""); setStock("");
+              setId(""); setName(""); setUnit(""); setCost(""); setStock(""); setShowCalc(false); setBulkPrice(""); setBulkQty("");
             }}>
               <Plus className="w-4 h-4 mr-2" /> Tambah Bahan Baku
             </Button>
@@ -113,6 +125,37 @@ export default function BahanBakuPage() {
                 <label className="text-sm font-medium">Nama Bahan Baku</label>
                 <Input value={name} onChange={e => setName(e.target.value)} placeholder="Contoh: Biji Kopi Arabica" autoFocus />
               </div>
+
+              {/* Kalkulator Konversi */}
+              <div className="bg-primary/5 p-3 rounded-lg border border-primary/20 space-y-3">
+                <div className="flex items-center justify-between cursor-pointer select-none" onClick={() => setShowCalc(!showCalc)}>
+                  <div className="flex items-center gap-2">
+                    <Calculator className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Kalkulator Konversi Otomatis</span>
+                  </div>
+                  <div className="text-xs text-primary font-medium">{showCalc ? "Tutup" : "Buka"}</div>
+                </div>
+                
+                {showCalc && (
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-primary/10">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Harga Beli Kemasan (Rp)</label>
+                      <Input type="number" value={bulkPrice} onChange={e => setBulkPrice(e.target.value)} placeholder="Contoh: 225000" className="h-8 text-sm bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Isi per Kemasan (g/ml)</label>
+                      <Input type="number" value={bulkQty} onChange={e => {
+                        setBulkQty(e.target.value);
+                        if (!stock || stock === "0") setStock(e.target.value);
+                      }} placeholder="Contoh: 1000" className="h-8 text-sm bg-background" />
+                    </div>
+                    <div className="col-span-2 text-xs text-muted-foreground leading-tight">
+                      Masukkan harga beli dan total isi (misal 1 kg = 1000 gram). Sistem akan otomatis menghitung Harga Modal per gram dan mengisi Stok Awal.
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Satuan (Unit)</label>
@@ -185,6 +228,7 @@ export default function BahanBakuPage() {
                         <Button variant="ghost" size="icon" onClick={() => {
                           setId(m.id); setName(m.name); setUnit(m.unit); 
                           setCost(m.cost_per_unit.toString()); setStock(m.current_stock.toString());
+                          setShowCalc(false); setBulkPrice(""); setBulkQty("");
                           setIsOpen(true);
                         }}>
                           <Edit className="w-4 h-4" />
@@ -204,3 +248,6 @@ export default function BahanBakuPage() {
     </div>
   );
 }
+
+
+
