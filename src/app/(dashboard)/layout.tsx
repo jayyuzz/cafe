@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { GlobalNotification } from "@/components/GlobalNotification";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useRouter, usePathname } from "next/navigation";
@@ -105,6 +106,7 @@ export default function DashboardLayout({
         onClose={() => setSidebarOpen(false)}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
+        <GlobalNotification permissions={perms} />
         <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 lg:p-8">
           {children}

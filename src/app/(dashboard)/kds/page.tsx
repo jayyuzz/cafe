@@ -11,70 +11,7 @@ import { Clock, CheckCircle2, ChefHat, Play, UtensilsCrossed, Bell, CheckSquare 
 
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
-// Fungsi untuk membunyikan suara (Voice TTS)
-const playVoiceNotification = () => {
-  try {
-    // 1. Coba gunakan Speech Synthesis (Suara Robot Google/Browser)
-    if ('speechSynthesis' in window) {
-      // Mencegah tumpuk suara tanpa mematikan engine (cancel() kadang membuat Safari/iOS error total)
-      if (window.speechSynthesis.speaking) {
-        return; 
-      }
-
-      const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
-      msg.lang = 'id-ID'; // Bahasa Indonesia
-      
-      // Coba cari suara perempuan dengan kata kunci yang lebih luas
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        // Ambil semua suara bahasa Indonesia
-        const idVoices = voices.filter(v => v.lang.toLowerCase().includes('id'));
-        
-        // Cari dari namanya (Damayanti = iOS, Gadis = Windows, Female = umum)
-        let femaleVoice = idVoices.find(v => 
-          v.name.toLowerCase().match(/female|wanita|perempuan|gadis|damayanti|siti|ayu/i) ||
-          v.voiceURI.toLowerCase().match(/female/i)
-        );
-
-        // Jika tidak ketemu label 'female', cari suara ke-2 selain suara pria (Andika/Male)
-        if (!femaleVoice && idVoices.length > 1) {
-          femaleVoice = idVoices.find(v => !v.name.toLowerCase().match(/andika|male|pria/i));
-        }
-
-        if (femaleVoice) {
-          msg.voice = femaleVoice;
-        }
-      }
-
-      msg.rate = 1.0;
-      msg.pitch = 1.15; // Jangan terlalu tinggi agar jika terpaksa cowok tidak cempreng
-      window.speechSynthesis.speak(msg);
-      return;
-    }
-
-    // 2. Fallback: Jika tidak mendukung Voice, gunakan Web Audio API (Lonceng)
-    const WebAudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-    if (!WebAudioCtx) return;
-    const ctx = new WebAudioCtx();
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(880, ctx.currentTime); 
-    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1); 
-    
-    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.5);
-  } catch (e) {
-    console.error("Audio/Voice play error: ", e);
-  }
-};
+// Voice Notification is now handled globally in GlobalNotification.tsx
 
 export default function KDSPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -96,11 +33,6 @@ export default function KDSPage() {
 
     if (data) {
       setOrders(data as OrderWithItems[]);
-      
-      // Jika dari update realtime dan ada order bertambah, bunyikan suara
-      if (isRealtimeUpdate && data.length > prevOrdersCount.current && soundEnabled) {
-        playVoiceNotification();
-      }
       prevOrdersCount.current = data.length;
     }
   };
@@ -235,18 +167,6 @@ export default function KDSPage() {
           <p className="text-muted-foreground mt-1">Layar pemantauan pesanan dapur secara real-time.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant={soundEnabled ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => {
-              setSoundEnabled(!soundEnabled);
-              if (!soundEnabled) playVoiceNotification(); // Test sound
-            }}
-            className={soundEnabled ? "bg-amber-600 hover:bg-amber-700" : ""}
-          >
-            <Bell className="w-4 h-4 mr-2" /> 
-            {soundEnabled ? "Notifikasi Suara: Nyala" : "Notifikasi Suara: Mati"}
-          </Button>
           <Button onClick={() => fetchOrders()} variant="outline" size="sm">
             Refresh Manual
           </Button>
