@@ -67,9 +67,14 @@ const navigationGroups = [
     ]
   },
   {
-    title: "Menu & Inventaris",
+    title: "Katalog Menu",
     items: [
       { name: "Menu & Produk", href: "/menu", icon: UtensilsCrossed, permission: "menu" },
+    ]
+  },
+  {
+    title: "Manajemen Gudang",
+    items: [
       { name: "Bahan Baku & HPP", href: "/bahan-baku", icon: Combine, permission: "menu" },
       { name: "Stok Barang", href: "/stok", icon: Archive, permission: "menu" },
       { name: "Waste & Spoilage", href: "/waste", icon: Trash2, permission: "menu" },
