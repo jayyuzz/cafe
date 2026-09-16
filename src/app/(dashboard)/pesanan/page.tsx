@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Utensils, ShoppingBag } from "lucide-react";
+import { Utensils, ShoppingBag, Bike } from "lucide-react";
 
 export default function PesananPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -144,13 +144,15 @@ export default function PesananPage() {
                 <div className="font-medium text-lg">
                   {order.customer_name || "Tamu"}
                 </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-md">
-                  {order.order_type === "dine_in" ? (
-                    <><Utensils className="h-4 w-4" /> Meja {order.table_number}</>
-                  ) : (
-                    <><ShoppingBag className="h-4 w-4" /> Takeaway</>
-                  )}
-                </div>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+                    {order.order_type === "dine_in" ? (
+                      <><Utensils className="h-4 w-4" /> Meja {order.table_number}</>
+                    ) : order.order_type === "delivery" ? (
+                      <><Bike className="h-4 w-4" /> Delivery</>
+                    ) : (
+                      <><ShoppingBag className="h-4 w-4" /> Takeaway</>
+                    )}
+                  </div>
               </div>
 
               <div className="space-y-2 text-sm flex-1">
