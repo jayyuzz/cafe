@@ -16,10 +16,25 @@ const playVoiceNotification = () => {
   try {
     // 1. Coba gunakan Speech Synthesis (Suara Robot Google/Browser)
     if ('speechSynthesis' in window) {
+      // Hentikan suara yang sedang berjalan agar tidak bertumpuk
+      window.speechSynthesis.cancel();
+
       const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
       msg.lang = 'id-ID'; // Bahasa Indonesia
+      
+      // Coba cari suara perempuan secara spesifik (jika ada)
+      const voices = window.speechSynthesis.getVoices();
+      const femaleVoice = voices.find(v => 
+        v.lang.includes('id') && 
+        (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('damayanti') || v.name.toLowerCase().includes('perempuan') || v.name.includes('Google'))
+      );
+      
+      if (femaleVoice) {
+        msg.voice = femaleVoice;
+      }
+
       msg.rate = 1.0;     // Kecepatan normal
-      msg.pitch = 1.1;    // Nada sedikit tinggi agar terdengar ramah
+      msg.pitch = 1.3;    // Nada ditinggikan agar terdengar lebih jelas/perempuan
       window.speechSynthesis.speak(msg);
       return;
     }
