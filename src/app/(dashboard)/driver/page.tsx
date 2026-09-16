@@ -180,7 +180,7 @@ export default function DriverDashboardPage() {
                         className="border-green-200 text-green-700 hover:bg-green-50 shrink-0"
                         onClick={() => {
                           const waPhone = order.customer_phone?.replace(/^0/, '62').replace(/\D/g, '');
-                          const waText = encodeURIComponent(`Halo kak ${order.customer_name || ''}, saya kurir dari Kafe. Pesanan kakak sedang saya antar menuju lokasi ya. Mohon ditunggu! 🛵`);
+                          const waText = encodeURIComponent(`Halo kak ${order.customer_name || ''}, saya kurir dari MVE Cafe. Pesanan kakak sedang saya antar menuju lokasi ya. Mohon ditunggu!`);
                           window.open(`https://wa.me/${waPhone}?text=${waText}`, '_blank');
                         }}
                       >
