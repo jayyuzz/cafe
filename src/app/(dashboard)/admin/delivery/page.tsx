@@ -26,6 +26,7 @@ export default function AdminDeliveryPage() {
   // Settings form states
   const [deliveryFee, setDeliveryFee] = useState(10000);
   const [waTemplate, setWaTemplate] = useState("");
+  const [adminPhone, setAdminPhone] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // SOP form state
@@ -45,6 +46,7 @@ export default function AdminDeliveryPage() {
         setOutlet(outletData);
         setDeliveryFee(outletData.delivery_fee ?? 10000);
         setWaTemplate(outletData.delivery_wa_template ?? 'Halo kak {nama}, saya kurir dari MVE Cafe. Pesanan kakak sedang saya antar menuju lokasi ya. Mohon ditunggu!');
+        setAdminPhone(outletData.phone ?? '082211603512');
       }
 
       // 2. Get Delivery Orders for today
@@ -102,7 +104,8 @@ export default function AdminDeliveryPage() {
         .from("outlets")
         .update({
           delivery_fee: deliveryFee,
-          delivery_wa_template: waTemplate
+          delivery_wa_template: waTemplate,
+          phone: adminPhone
         })
         .eq("id", outlet.id);
 
@@ -291,9 +294,20 @@ export default function AdminDeliveryPage() {
           <Card>
             <CardHeader>
               <CardTitle>Pengaturan Pengiriman</CardTitle>
-              <CardDescription>Atur biaya ongkir dan template pesan WhatsApp otomatis.</CardDescription>
+              <CardDescription>Atur biaya ongkir, nomor admin, dan template pesan WhatsApp otomatis.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Nomor WA Admin</label>
+                <Input 
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value)}
+                  placeholder="Contoh: 082211603512 atau 6282211603512"
+                  className="w-full sm:w-[300px]"
+                />
+                <p className="text-xs text-muted-foreground">Nomor ini akan dihubungi oleh pelanggan jika mereka klik tombol Chat Admin/Kirim Bukti Pembayaran.</p>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-semibold">Biaya Ongkir (Delivery Fee)</label>
                 <div className="relative">

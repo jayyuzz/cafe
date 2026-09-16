@@ -380,6 +380,7 @@ function OrderPageContent() {
       type: orderType,
       method: paymentMethod,
       outlet: outlet.id,
+      phone: outlet.phone || "6282211603512"
     });
     router.push(`/order/sukses?${params.toString()}`);
   };

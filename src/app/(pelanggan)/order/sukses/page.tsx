@@ -120,6 +120,7 @@ function SuksesContent() {
   const type = searchParams.get("type");
   const method = searchParams.get("method"); // "qris" | "cash"
   const outletId = searchParams.get("outlet");
+  const adminPhone = searchParams.get("phone")?.replace(/^0/, '62').replace(/\D/g, '') || "6282211603512";
 
   const isDineIn = type === "dine_in" && table;
   const isQris = method === "qris";
@@ -204,9 +205,9 @@ function SuksesContent() {
 
         {/* 🚀 CTA 🚀 */}
         <div className="mt-4 space-y-3">
-          {method !== 'cash' && (
+          {method !== 'cash' ? (
             <a
-              href={`https://wa.me/6282211603512?text=${encodeURIComponent(`Halo Kasir, ini bukti pembayaran untuk pesanan ${orderNumber} sebesar ${formatRupiah(total)}.`)}`}
+              href={`https://wa.me/${adminPhone}?text=${encodeURIComponent(`Halo Kasir, ini bukti pembayaran untuk pesanan ${orderNumber} sebesar ${formatRupiah(total)}.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between w-full bg-emerald-500 text-white px-5 py-4 rounded-2xl font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
@@ -217,7 +218,20 @@ function SuksesContent() {
               </div>
               <ArrowRight className="h-4 w-4 opacity-70" />
             </a>
-          )}
+          ) : type === 'delivery' ? (
+            <a
+              href={`https://wa.me/${adminPhone}?text=${encodeURIComponent(`Halo Admin, saya memesan Delivery dengan nomor pesanan ${orderNumber}. Mohon segera diproses ya.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full bg-emerald-500 text-white px-5 py-4 rounded-2xl font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                <span>Hubungi Admin (WA)</span>
+              </div>
+              <ArrowRight className="h-4 w-4 opacity-70" />
+            </a>
+          ) : null}
 
           <Link
             href={menuHref}
