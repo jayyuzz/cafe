@@ -73,6 +73,7 @@ export default function DashboardLayout({
       if (pathname === "/" && !perms.includes("dashboard")) {
         // Redirect to their first available menu
         if (perms.includes("pos")) router.push("/pos");
+        else if (perms.includes("kds")) router.push("/kds");
         else if (perms.includes("pesanan")) router.push("/pesanan");
         else if (perms.includes("driver")) router.push("/driver");
         else if (perms.includes("menu")) router.push("/menu");

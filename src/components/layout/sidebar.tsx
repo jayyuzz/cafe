@@ -52,10 +52,11 @@ const navigationGroups = [
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard" },
       { name: "Kasir / POS", href: "/pos", icon: ShoppingCart, permission: "pos" },
-      { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "pos" },
+      { name: "Dapur / KDS", href: "/kds", icon: ChefHat, permission: "kds" },
       { name: "Pesanan", href: "/pesanan", icon: ClipboardList, permission: "pesanan" },
       { name: "Tugas Antaran", href: "/driver", icon: Bike, permission: "driver" },
       { name: "Shift Kasir", href: "/shift", icon: KeySquare, permission: "pos" },
+      { name: "Pelanggan", href: "/customers", icon: Users, permission: "pos" },
     ]
   },
   {

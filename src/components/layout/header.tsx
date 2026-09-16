@@ -58,7 +58,7 @@ export function Header({ onMenuClick, user }: HeaderProps) {
 
   const quickShortcuts = [
     { href: "/pos", icon: ShoppingCart, title: "Kasir / POS", permission: "pos" },
-    { href: "/kds", icon: ChefHat, title: "Dapur / KDS", permission: "pos" },
+    { href: "/kds", icon: ChefHat, title: "Dapur / KDS", permission: "kds" },
     { href: "/pesanan", icon: ClipboardList, title: "Pesanan", permission: "pesanan" },
     { href: "/driver", icon: Bike, title: "Tugas Antaran", permission: "driver" },
     { href: "/shift", icon: KeySquare, title: "Shift Kasir", permission: "pos" },

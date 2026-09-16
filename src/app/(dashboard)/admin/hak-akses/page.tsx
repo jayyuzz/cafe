@@ -16,8 +16,9 @@ interface Role {
 
 const AVAILABLE_FEATURES = [
   { id: "dashboard", label: "Dashboard (Ringkasan)" },
-  { id: "pos", label: "Kasir / POS (KDS, Shift, Pelanggan)" },
-  { id: "pesanan", label: "Kelola Pesanan (Dapur)" },
+  { id: "pos", label: "Kasir / POS (Shift, Pelanggan)" },
+  { id: "kds", label: "Dapur / KDS (Layar Masak)" },
+  { id: "pesanan", label: "Kelola Pesanan (Riwayat)" },
   { id: "driver", label: "Tugas Antaran (Driver)" },
   { id: "menu", label: "Kelola Menu (Bahan, Stok, Waste)" },
   { id: "laporan", label: "Laporan & Statistik" },
