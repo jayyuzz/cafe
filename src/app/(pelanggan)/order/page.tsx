@@ -92,10 +92,22 @@ function PaymentMethodPicker({
     },
   ];
 
-  // Filter out "cash" if orderType is delivery
   const options = allOptions.filter(opt => {
-    if (orderType === "delivery" && opt.id === "cash") return false;
+    // Untuk delivery, HANYA tampilkan qris dan cash(COD)
+    if (orderType === "delivery") {
+      return opt.id === "qris" || opt.id === "cash";
+    }
     return true;
+  }).map(opt => {
+    // Ubah label khusus delivery untuk opsi cash
+    if (orderType === "delivery" && opt.id === "cash") {
+      return {
+        ...opt,
+        label: "Bayar di Tempat (COD)",
+        desc: "Bayar tunai ke driver saat pesanan tiba",
+      };
+    }
+    return opt;
   });
 
   return (

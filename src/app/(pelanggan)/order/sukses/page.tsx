@@ -66,7 +66,8 @@ function QrisBlock({ total }: { total: number }) {
 }
 
 /* ─── Cash Block ─────────────────────────────────────────────────────────── */
-function CashBlock({ total }: { total: number }) {
+function CashBlock({ total, type }: { total: number, type: string | null }) {
+  const isDelivery = type === "delivery";
   return (
     <div className="px-5 py-4 border-b border-border/50">
       <div className="flex items-center gap-2 mb-3">
@@ -74,8 +75,12 @@ function CashBlock({ total }: { total: number }) {
           <Banknote className="h-4 w-4 text-amber-800" />
         </div>
         <div>
-          <p className="text-sm font-bold text-amber-800">Bayar di Kasir</p>
-          <p className="text-xs text-muted-foreground">Siapkan uang atau kartu</p>
+          <p className="text-sm font-bold text-amber-800">
+            {isDelivery ? "Bayar di Tempat (COD)" : "Bayar di Kasir"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {isDelivery ? "Siapkan uang tunai untuk driver" : "Siapkan uang atau kartu"}
+          </p>
         </div>
       </div>
 
@@ -87,18 +92,20 @@ function CashBlock({ total }: { total: number }) {
 
       {/* Steps */}
       <div className="mt-4 space-y-2">
-        {[
-          { icon: <Clock className="h-3.5 w-3.5" />, text: "Tunggu pesananmu selesai disiapkan" },
-          { icon: <Banknote className="h-3.5 w-3.5" />, text: "Datang ke kasir dan tunjukkan nomor pesanan" },
-          { icon: <CheckCircle2 className="h-3.5 w-3.5" />, text: "Bayar & nikmati pesananmu 😋" },
-        ].map(({ icon, text }, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <div className="h-6 w-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-              {icon}
-            </div>
-            <p className="text-xs text-muted-foreground">{text}</p>
-          </div>
-        ))}
+        <div className="flex items-start gap-2.5">
+          <Clock className="h-4 w-4 text-amber-700/60 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">Tunggu pesananmu selesai disiapkan</p>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <Banknote className="h-4 w-4 text-amber-700/60 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {isDelivery ? "Serahkan pembayaran kepada driver" : "Datang ke kasir dan tunjukkan nomor pesanan"}
+          </p>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <CheckCircle2 className="h-4 w-4 text-amber-700/60 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">Bayar & nikmati pesananmu 😋</p>
+        </div>
       </div>
     </div>
   );
@@ -191,7 +198,7 @@ function SuksesContent() {
           {/* Payment-specific content */}
           {isQris
             ? <QrisBlock total={total} />
-            : <CashBlock total={total} />}
+            : <CashBlock total={total} type={type} />}
 
         </div>
 
