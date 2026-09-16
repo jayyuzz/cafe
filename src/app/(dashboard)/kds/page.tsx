@@ -24,20 +24,30 @@ const playVoiceNotification = () => {
       const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
       msg.lang = 'id-ID'; // Bahasa Indonesia
       
-      // Coba cari suara perempuan (opsional, tidak memaksa jika tidak ada agar tidak error)
+      // Coba cari suara perempuan dengan kata kunci yang lebih luas
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
-        const femaleVoice = voices.find(v => 
-          v.lang.includes('id') && 
-          (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('damayanti') || v.name.toLowerCase().includes('perempuan'))
+        // Ambil semua suara bahasa Indonesia
+        const idVoices = voices.filter(v => v.lang.toLowerCase().includes('id'));
+        
+        // Cari dari namanya (Damayanti = iOS, Gadis = Windows, Female = umum)
+        let femaleVoice = idVoices.find(v => 
+          v.name.toLowerCase().match(/female|wanita|perempuan|gadis|damayanti|siti|ayu/i) ||
+          v.voiceURI.toLowerCase().match(/female/i)
         );
+
+        // Jika tidak ketemu label 'female', cari suara ke-2 selain suara pria (Andika/Male)
+        if (!femaleVoice && idVoices.length > 1) {
+          femaleVoice = idVoices.find(v => !v.name.toLowerCase().match(/andika|male|pria/i));
+        }
+
         if (femaleVoice) {
           msg.voice = femaleVoice;
         }
       }
 
       msg.rate = 1.0;
-      msg.pitch = 1.3;
+      msg.pitch = 1.15; // Jangan terlalu tinggi agar jika terpaksa cowok tidak cempreng
       window.speechSynthesis.speak(msg);
       return;
     }
