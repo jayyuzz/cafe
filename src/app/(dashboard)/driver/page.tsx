@@ -16,6 +16,7 @@ export default function DriverDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [driverId, setDriverId] = useState<string | null>(null);
+  const [waTemplate, setWaTemplate] = useState<string>('Halo kak {nama}, pesanan {order_id} sedang diantar!');
 
   const supabase = createClient();
 
@@ -23,6 +24,12 @@ export default function DriverDashboardPage() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setDriverId(data.user.id);
+      }
+    });
+
+    supabase.from("outlets").select("delivery_wa_template").limit(1).single().then(({ data }) => {
+      if (data?.delivery_wa_template) {
+        setWaTemplate(data.delivery_wa_template);
       }
     });
   }, []);
@@ -180,7 +187,10 @@ export default function DriverDashboardPage() {
                         className="border-green-200 text-green-700 hover:bg-green-50 shrink-0"
                         onClick={() => {
                           const waPhone = order.customer_phone?.replace(/^0/, '62').replace(/\D/g, '');
-                          const waText = encodeURIComponent(`Halo kak ${order.customer_name || ''}, saya kurir dari MVE Cafe. Pesanan kakak sedang saya antar menuju lokasi ya. Mohon ditunggu!`);
+                          const parsedText = waTemplate
+                            .replace(/{nama}/g, order.customer_name || 'Kakak')
+                            .replace(/{order_id}/g, order.order_number);
+                          const waText = encodeURIComponent(parsedText);
                           window.open(`https://wa.me/${waPhone}?text=${waText}`, '_blank');
                         }}
                       >

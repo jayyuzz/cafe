@@ -21,6 +21,12 @@ export type Database = {
         Update: Partial<Outlet>
         Relationships: []
       }
+      delivery_checklists: {
+        Row: DeliveryChecklist
+        Insert: Partial<DeliveryChecklist> & Pick<DeliveryChecklist, 'task' | 'outlet_id'>
+        Update: Partial<DeliveryChecklist>
+        Relationships: []
+      }
       roles: {
         Row: Role
         Insert: Partial<Role> & Pick<Role, 'id' | 'name'>
@@ -148,6 +154,16 @@ export type Outlet = {
   service_charge_enabled: boolean
   service_charge_percentage: number
   total_tables: number
+  is_active: boolean
+  delivery_fee: number | null
+  delivery_wa_template: string | null
+  created_at: string
+}
+
+export type DeliveryChecklist = {
+  id: string
+  outlet_id: string
+  task: string
   is_active: boolean
   created_at: string
 }

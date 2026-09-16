@@ -79,6 +79,7 @@ const navigationGroups = [
     title: "Manajerial & Admin",
     items: [
       { name: "Laporan & Analitik", href: "/laporan", icon: BarChart3, permission: "laporan" },
+      { name: "Manajemen Delivery", href: "/admin/delivery", icon: Bike, permission: "admin_log" },
       { name: "QR Meja", href: "/admin/qr-meja", icon: QrCode, permission: "admin_log" },
       { name: "Manajemen User", href: "/admin/users", icon: UserCog, permission: "hak_akses" },
       { name: "Hak Akses", href: "/admin/hak-akses", icon: KeySquare, permission: "hak_akses" },

@@ -275,7 +275,7 @@ function OrderPageContent() {
   }, 0);
   const taxPercentage = outlet?.tax_enabled ? (outlet?.tax_percentage || 0) : 0;
   const tax = subtotal * (taxPercentage / 100);
-  const ongkir = orderType === "delivery" ? 10000 : 0;
+  const ongkir = orderType === "delivery" ? (outlet?.delivery_fee ?? 10000) : 0;
   const total = subtotal + tax + ongkir;
 
   /* ── Location ──────────────────────────────────────────────────────────── */
