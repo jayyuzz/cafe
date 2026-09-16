@@ -17,7 +17,7 @@ export function GlobalNotification({ permissions }: { permissions?: string[] }) 
         if ('speechSynthesis' in window) {
           if (window.speechSynthesis.speaking) return; 
 
-          const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
+          const msg = new SpeechSynthesisUtterance("Ada pesanan baru nih, mohon segera dicek ya.");
           msg.lang = 'id-ID'; 
           
           const voices = window.speechSynthesis.getVoices();
