@@ -116,7 +116,21 @@ export default function BahanBakuPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Satuan (Unit)</label>
-                  <Input value={unit} onChange={e => setUnit(e.target.value)} placeholder="Contoh: gram, ml, pcs" />
+                  <select 
+                    value={unit} 
+                    onChange={e => setUnit(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="" disabled>Pilih Satuan...</option>
+                    <option value="gram">gram (g)</option>
+                    <option value="kg">kilogram (kg)</option>
+                    <option value="ml">mililiter (ml)</option>
+                    <option value="liter">liter (L)</option>
+                    <option value="pcs">pieces (pcs)</option>
+                    <option value="porsi">porsi</option>
+                    <option value="botol">botol</option>
+                    <option value="kaleng">kaleng</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Harga Modal per {unit || 'Satuan'}</label>
