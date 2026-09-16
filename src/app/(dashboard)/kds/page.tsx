@@ -11,9 +11,20 @@ import { Clock, CheckCircle2, ChefHat, Play, UtensilsCrossed, Bell, CheckSquare 
 
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
-// Fungsi untuk membunyikan lonceng (ding) menggunakan Web Audio API tanpa file tambahan
-const playDing = () => {
+// Fungsi untuk membunyikan suara (Voice TTS)
+const playVoiceNotification = () => {
   try {
+    // 1. Coba gunakan Speech Synthesis (Suara Robot Google/Browser)
+    if ('speechSynthesis' in window) {
+      const msg = new SpeechSynthesisUtterance("Ada pesanan baru masuk!");
+      msg.lang = 'id-ID'; // Bahasa Indonesia
+      msg.rate = 1.0;     // Kecepatan normal
+      msg.pitch = 1.1;    // Nada sedikit tinggi agar terdengar ramah
+      window.speechSynthesis.speak(msg);
+      return;
+    }
+
+    // 2. Fallback: Jika tidak mendukung Voice, gunakan Web Audio API (Lonceng)
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
@@ -23,7 +34,6 @@ const playDing = () => {
     osc.connect(gainNode);
     gainNode.connect(ctx.destination);
     
-    // Suara Ting yang ramah
     osc.type = "sine";
     osc.frequency.setValueAtTime(880, ctx.currentTime); 
     osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1); 
@@ -34,14 +44,14 @@ const playDing = () => {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
   } catch (e) {
-    console.error("Audio play error: ", e);
+    console.error("Audio/Voice play error: ", e);
   }
 };
 
 export default function KDSPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const supabase = createClient();
   const prevOrdersCount = useRef(0);
 
@@ -59,9 +69,9 @@ export default function KDSPage() {
     if (data) {
       setOrders(data as OrderWithItems[]);
       
-      // Jika dari update realtime dan ada order bertambah, bunyikan bel
+      // Jika dari update realtime dan ada order bertambah, bunyikan suara
       if (isRealtimeUpdate && data.length > prevOrdersCount.current && soundEnabled) {
-        playDing();
+        playVoiceNotification();
       }
       prevOrdersCount.current = data.length;
     }
@@ -202,7 +212,7 @@ export default function KDSPage() {
             size="sm" 
             onClick={() => {
               setSoundEnabled(!soundEnabled);
-              if (!soundEnabled) playDing(); // Test sound
+              if (!soundEnabled) playVoiceNotification(); // Test sound
             }}
             className={soundEnabled ? "bg-amber-600 hover:bg-amber-700" : ""}
           >
