@@ -9,13 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Shield, Trash2, Edit } from "lucide-react";
+import { Shield, Trash2, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import { OrderEditor } from "@/components/admin/order-editor";
 
 export default function AdminPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [logPage, setLogPage] = useState(1);
+  const [orderPage, setOrderPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
   const supabase = createClient();
 
   const fetchLogs = async () => {
@@ -23,7 +26,7 @@ export default function AdminPage() {
       .from("activity_logs")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(1000);
     if (data) setLogs(data);
   };
 
@@ -114,7 +117,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {logs.map((log) => (
+                    {logs.slice((logPage - 1) * ITEMS_PER_PAGE, logPage * ITEMS_PER_PAGE).map((log) => (
                       <tr key={log.id} className="border-b hover:bg-muted/30">
                         <td className="px-6 py-3 whitespace-nowrap">{formatDate(log.created_at)}</td>
                         <td className="px-6 py-3">{log.user_name || "Kasir"}</td>
@@ -134,6 +137,17 @@ export default function AdminPage() {
                   </tbody>
                 </table>
               </div>
+              {logs.length > ITEMS_PER_PAGE && (
+                <div className="flex items-center justify-between px-6 py-3 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Menampilkan {((logPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(logPage * ITEMS_PER_PAGE, logs.length)} dari {logs.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={logPage === 1} onClick={() => setLogPage(p => p - 1)}><ChevronLeft className="w-4 h-4 mr-1" /> Prev</Button>
+                    <Button variant="outline" size="sm" disabled={logPage >= Math.ceil(logs.length / ITEMS_PER_PAGE)} onClick={() => setLogPage(p => p + 1)}>Next <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -153,7 +167,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
+                    {orders.slice((orderPage - 1) * ITEMS_PER_PAGE, orderPage * ITEMS_PER_PAGE).map((order) => (
                       <tr key={order.id} className="border-b hover:bg-muted/30">
                         <td className="px-6 py-3">
                           <div className="font-semibold">{order.order_number}</div>
@@ -198,6 +212,17 @@ export default function AdminPage() {
                   </tbody>
                 </table>
               </div>
+              {orders.length > ITEMS_PER_PAGE && (
+                <div className="flex items-center justify-between px-6 py-3 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Menampilkan {((orderPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(orderPage * ITEMS_PER_PAGE, orders.length)} dari {orders.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={orderPage === 1} onClick={() => setOrderPage(p => p - 1)}><ChevronLeft className="w-4 h-4 mr-1" /> Prev</Button>
+                    <Button variant="outline" size="sm" disabled={orderPage >= Math.ceil(orders.length / ITEMS_PER_PAGE)} onClick={() => setOrderPage(p => p + 1)}>Next <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -213,3 +238,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+
